@@ -1,7 +1,7 @@
 # Telegram bot that connects volunteers to beneficiaries
 
 - See `doc/chat_interaction.svg` to get an idea of the workflow
-- Code derived from https://github.com/roataway/telegram-bot
+- Code derived from https://github.com/roataway/telegram-bot, it provides examples of stateful interactions
 
 ## The big picture
 
@@ -55,9 +55,10 @@ send us a list of `(chat_id, nickname)` tuples, so we don't need this KV store h
 
 The following endpoints are used for interaction between the backend and the Telegram bot:
 
-    - backend->bot: notify about a new request {requestId, beneficiary name, list of volunteer IDs to send alert to, street address}
+    [done] backend->bot: notify bot about a new request for assistance
+    [done] backend->bot: notify the specific volunteer that they are responsible for a request
+    [done] backend->bot: notify the specific volunteer that a request assigned to them was cancelled}
     - bot->backend: notify about offers from volunteers about a specific requestID
-    - backend->bot: notify the specific volunteer that {they are responsible | they've been cancelled}
     - bot->backend: volunteer is on their way
     - bot->backend: mission accomplished
     - bot->backend: send the receipt
