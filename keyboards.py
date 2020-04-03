@@ -1,4 +1,4 @@
-from telegram import InlineKeyboardButton, KeyboardButton
+from telegram import KeyboardButton
 
 default_board = [
     [KeyboardButton("/vreausaajut")],

@@ -5,12 +5,8 @@ import os
 from telegram.ext import (
     Updater,
     CommandHandler,
-    CallbackQueryHandler,
-    ConversationHandler,
-    MessageHandler,
-    Filters,
 )
-from telegram import InlineKeyboardMarkup, ReplyKeyboardMarkup, ParseMode
+from telegram import ReplyKeyboardMarkup
 from telegram.ext.dispatcher import run_async
 
 import constants as c
