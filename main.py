@@ -25,9 +25,11 @@ class Ajubot:
         """Constructor
         :param bot: instance of Telegram bot object"""
         self.bot = bot
-        self.rest = restapi.BotRestApi(self.hook_request_assistance,
-                                       self.hook_cancel_assistance,
-                                       self.hook_assign_assistance)
+        self.rest = restapi.BotRestApi(
+            self.hook_request_assistance,
+            self.hook_cancel_assistance,
+            self.hook_assign_assistance,
+        )
 
     def serve(self):
         """The main loop"""
@@ -52,7 +54,9 @@ class Ajubot:
         """Send a message when the command /start is issued."""
         user = update.effective_user
         # TODO add this to some local storage, maybe sqlite?
-        log.info(f"ADD {user.username}, {user.full_name}, @{update.effective_chat.id}, {user.language_code}")
+        log.info(
+            f"ADD {user.username}, {user.full_name}, @{update.effective_chat.id}, {user.language_code}"
+        )
         update.message.reply_text(f"Bine ai venit, {user.username or user.full_name}.")
 
         context.bot.sendMessage(
@@ -78,7 +82,6 @@ class Ajubot:
         # TODO consider notifying the backend about it
         update.message.reply_text(c.MSG_STANDBY)
 
-
     @staticmethod
     def on_bot_error(update, context):
         """Log Errors caused by Updates."""
@@ -94,21 +97,19 @@ class Ajubot:
 
         dispatcher.add_error_handler(self.on_bot_error)
 
-
-
     @run_async
     def hook_request_assistance(self, raw_data):
         """This will be invoked by the REST API when a new request for
         assistance was received from the backend.
         :param raw_data: TODO: discuss payload format, see readme"""
-        log.info('NEW request for assistance')
+        log.info("NEW request for assistance")
 
     @run_async
     def hook_cancel_assistance(self, raw_data):
         """This will be invoked by the REST API when a new request for
         assistance was CANCELED from the backend.
         :param raw_data: TODO: discuss payload format, see readme"""
-        log.info('CANCEL request for assistance')
+        log.info("CANCEL request for assistance")
 
     @run_async
     def hook_assign_assistance(self, raw_data):
@@ -116,10 +117,8 @@ class Ajubot:
         assistance was ASSIGNED to a specific volunteer.
         :param raw_data: TODO: discuss payload format, see readme"""
         volunteer = "hardcoded for now"
-        log.info('ASSIGN request for assistance to %s', volunteer)
+        log.info("ASSIGN request for assistance to %s", volunteer)
         # self.send_message("")
-
-
 
     @run_async
     def send_message(self, chat_id, text):
@@ -131,19 +130,20 @@ class Ajubot:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s %(levelname)5s %(name)5s - %(message)s')
+    logging.basicConfig(
+        level=logging.DEBUG, format="%(asctime)s %(levelname)5s %(name)5s - %(message)s"
+    )
 
     # you might want to re-enable these two lines if you really need to debug the bot's internals
-    logging.getLogger('telegram').setLevel(logging.WARNING)
-    logging.getLogger('JobQueue').setLevel(logging.WARNING)
+    logging.getLogger("telegram").setLevel(logging.WARNING)
+    logging.getLogger("JobQueue").setLevel(logging.WARNING)
 
     log.info("Starting Ajubot v%s", c.VERSION)
 
     try:
-        token = os.environ['TELEGRAM_TOKEN']
+        token = os.environ["TELEGRAM_TOKEN"]
     except KeyError:
-        sys.exit('Set TELEGRAM_TOKEN environment variable before running the bot')
+        sys.exit("Set TELEGRAM_TOKEN environment variable before running the bot")
 
     bot = Updater(token=token, use_context=True)
     ajubot = Ajubot(bot)

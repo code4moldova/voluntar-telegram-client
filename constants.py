@@ -1,4 +1,4 @@
-VERSION = "0.0.1"
+VERSION = "0.0.1"  # follow SemVer conventions: https://semver.org/
 URL = "code4md.com"
 
 STATE_EXPECTING_FEEDBACK = 0
