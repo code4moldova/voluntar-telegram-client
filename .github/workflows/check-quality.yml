@@ -1,4 +1,5 @@
 name: Code quality checks
+
 on: [push]
 
 steps:
@@ -9,20 +10,7 @@ steps:
     python-version: '3.8'
 - name: Install dependencies
   run: pip install -r requirements.txt
-
-- name: Python Code Quality and Lint
-  uses: ricardochaves/python-lint@v1.1.0
-    with:
-      python-root-list: "python_alelo tests"
-      use-pylint: false
-      use-pycodestyle: false
-      use-flake8: true
-      use-black: true
-      use-mypy: false
-      use-isort: false
-      extra-pylint-options: ""
-      extra-pycodestyle-options: ""
-      extra-flake8-options: ""
-      extra-black-options: ""
-      extra-mypy-options: ""
-      extra-isort-options: ""
+- name: Run checks
+  run: |
+    pip install flake8 black bandit
+    make verify
