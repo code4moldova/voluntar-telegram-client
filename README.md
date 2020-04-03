@@ -102,3 +102,10 @@ from the backend.
 1. Run ``make autoformat`` to format all ``.py`` files
 2. Run ``make verify`` and examine the output, looking for issues that need to be addressed
 3. Open a pull request with your changes
+
+
+# How to use the Docker image
+
+1. Build it first: `docker build -t covid-tg-bot .`. Run `docker images` to ensure it is in the list.
+2. Run it with: `docker run --rm -it -p 5000:5000 -e TELEGRAM_TOKEN='----replace-token-here' covid-tg-bot` (adjust to
+taste, for example you might want to remove `--rm`)
