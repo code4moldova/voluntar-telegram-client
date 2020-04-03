@@ -25,7 +25,9 @@ class Ajubot:
         """Constructor
         :param bot: instance of Telegram bot object"""
         self.bot = bot
-        self.rest = restapi.BotRestApi(self.hook_request_assistance)
+        self.rest = restapi.BotRestApi(self.hook_request_assistance,
+                                       self.hook_cancel_assistance,
+                                       self.hook_assign_assistance)
 
     def serve(self):
         """The main loop"""
@@ -99,7 +101,25 @@ class Ajubot:
         """This will be invoked by the REST API when a new request for
         assistance was received from the backend.
         :param raw_data: TODO: discuss payload format, see readme"""
-        log.info('New request for assistance')
+        log.info('NEW request for assistance')
+
+    @run_async
+    def hook_cancel_assistance(self, raw_data):
+        """This will be invoked by the REST API when a new request for
+        assistance was CANCELED from the backend.
+        :param raw_data: TODO: discuss payload format, see readme"""
+        log.info('CANCEL request for assistance')
+
+    @run_async
+    def hook_assign_assistance(self, raw_data):
+        """This will be invoked by the REST API when a new request for
+        assistance was ASSIGNED to a specific volunteer.
+        :param raw_data: TODO: discuss payload format, see readme"""
+        volunteer = "hardcoded for now"
+        log.info('ASSIGN request for assistance to %s', volunteer)
+        # self.send_message("")
+
+
 
     @run_async
     def send_message(self, chat_id, text):
