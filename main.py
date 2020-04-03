@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import json
 
 from telegram.ext import (
     Updater,
@@ -150,4 +151,5 @@ if __name__ == "__main__":
         log.debug("Interactive quit")
         sys.exit()
     finally:
-        log.info("Quitting")
+        log.info('Quitting')
+
