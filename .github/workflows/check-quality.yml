@@ -2,15 +2,17 @@ name: Code quality checks
 
 on: [push]
 
-steps:
-- uses: actions/checkout@v2
-- name: Set up Python
-  uses: actions/setup-python@v1
-  with:
-    python-version: '3.8'
-- name: Install dependencies
-  run: pip install -r requirements.txt
-- name: Run checks
-  run: |
-    pip install flake8 black bandit
-    make verify
+jobs:
+  check:
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.8'
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Run checks
+      run: |
+        pip install -r requirements-dev.txt
+        make verify
