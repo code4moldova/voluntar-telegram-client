@@ -6,7 +6,7 @@ from telegram.ext import (
     Updater,
     CommandHandler,
 )
-from telegram import InlineKeyboardMarkup, ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup
 from telegram.ext.dispatcher import run_async
 
 import constants as c
