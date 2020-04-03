@@ -1,3 +1,6 @@
+name: Code quality checks
+on: [push]
+
 steps:
 - uses: actions/checkout@v2
 - name: Set up Python
