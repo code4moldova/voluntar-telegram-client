@@ -12,7 +12,7 @@ from telegram.ext import (
     # PicklePersistence,  # TODO doesn't propagate updates immediately, ask the lib maintainers why
     DictPersistence,
 )
-from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup
 from telegram.ext.dispatcher import run_async
 
 
