@@ -13,24 +13,42 @@ class Backender(object):
         self.username = username
         self.password = password
 
-    def _get(self, url=''):
+    def _get(self, url):
         """Function for internal use, that sends GET requests to the server
         :param url: str, this will be added to the base_url to which the request is sent"""
-        res = requests.get(self.base_url+url, auth=(self.username, self.password))
-        import pdb; pdb.set_trace()
-        print(res)
+        res = requests.get(self.base_url + url, auth=(self.username, self.password))
+        # log.debug('Got %s', res.status_code)
+        if res.status_code == 200:
+            return res
+
+        raise ValueError("Bad response")
 
     # TODO
-    def _post(self, url='', payload):
+    def _post(self, payload, url=""):
         """Function for internal use, it sends POST requests to the server
-        :param url: str, this will be added to the base_url to which the request is sent
-        :param payload: what needs to be sent within the POST request"""
-        requests.get(self.base_url+url, auth=(self.username, self.password))
+        :param payload: what needs to be sent within the POST request
+        :param url: str, this will be added to the base_url to which the request is sent"""
+        requests.get(self.base_url + url, auth=(self.username, self.password))
+
+    def get_request_details(self, request_id):
+        """Retrieve the details of a request
+        :param request_id: str, request id
+        :returns: dict with the metadata"""
+        response = self._get("beneficiary/filters/1/10?id=" + request_id)
+        raw = response.json()
+
+        # if there are no results, it means that such a request ID doesn't exist
+        if raw["count"] == 0:
+            raise KeyError
+
+        # If we got this far, it means that the request exists and we can retrieve its details. Note that we
+        # only take the first element, because we expect there to be a single request with that id
+        return raw["list"][0]
 
     # TODO
     def link_chatid_to_volunteer(self, volunteer_id, chat_id):
         """Tell the backend that a specific volunteer is associated with the given Telegram chat_id"""
-        pass
+        log.debug("Link vol:%s to chat %s", volunteer_id, chat_id)
 
     # TODO
     def upload_shopping_receipt(self, data, request_id):
@@ -39,16 +57,7 @@ class Backender(object):
         request in the system.
         :param data: bytearray, raw data corresponding to the image
         :param request_id: str, identifier of request"""
-        pass
-
-    # TODO
-    def upload_shopping_receipt(self, data, request_id):
-        """Upload a receipt to the server, to document expenses handled by the volunteer on behalf of the
-        beneficiary. Note that it is possible that a volunteer will send several photos that are linked to the same
-        request in the system.
-        :param data: bytearray, raw data corresponding to the image
-        :param request_id: str, identifier of request"""
-        pass
+        log.debug("Send receipt (%i bytes) for req:%s", len(data), request_id)
 
     # TODO
     def relay_offer(self, request_id, volunteer_id, offer):
@@ -57,22 +66,26 @@ class Backender(object):
         :param request_id: str, identifier of request
         :param volunteer_id: str, volunteer identifier
         :param offer: TODO the offer indicates when the volunteer will be able to reach the beneficiary"""
-        pass
+        log.debug("Relay offer for req:%s from vol:%s -> %s", request_id, volunteer_id, offer)
 
     # TODO
     def update_request_status(self, request_id, status):
         """Change the status of a request, e.g., when a volunteer is on their way, or when the request was fulfilled.
         :param request_id: str, identifier of request
         :param status: TODO indicate what state it is in {new, assigned, in progress, done, something else...}"""
-        pass
+        log.debug("Set req:%s to: `%s`", request_id, status)
 
 
 if __name__ == "__main__":
-    # Here you can play around with the backend without involving any of the Telegram-related logic
+    logging.basicConfig(
+        level=logging.DEBUG, format="%(asctime)s %(levelname)5s %(name)5s - %(message)s"
+    )
 
-    url = 'http://127.0.0.1:5000/api/'
-    username = 'testuser'
+    # Here you can play around with the backend without involving any of the Telegram-related logic
+    url = "http://127.0.0.1:5000/api/"
+    username = "testuser"
     password = "changethis"
 
     b = Backender(url, username, password)
-    b._get('beneficiary')
+    result = b.get_request_details("5e84c10a9938cfffc0217ed1")
+    log.info(result)
