@@ -58,8 +58,8 @@ class BotRestApi(object):
         if request.method == "POST":
             try:
                 data = json.loads(request.get_data())
-            except json.decoder.JSONDecodeError:
-                return BadRequest("Request malformed")
+            except json.decoder.JSONDecodeError as err:
+                return BadRequest("Request malformed: %s" % err)
 
             # if we got this far, it means we're ok, so we invoke the function that does the job
             # and pass it the input parameters
@@ -90,16 +90,14 @@ class BotRestApi(object):
             return MethodNotAllowed()
 
         if request.method == "POST":
-            log.debug("Got assign request: `%s`", request.form)
-            if False:
-                # TODO verify if the payload has all the required data
-                # TODO define parameters in the data
-                # do some processing, if there are any issues, return an error
-                return BadRequest("Request malformed")
+            try:
+                data = json.loads(request.get_data())
+            except json.decoder.JSONDecodeError as err:
+                return BadRequest("Request malformed: %s" % err)
 
             # if we got this far, it means we're ok, so we invoke the function that does the job
             # and pass it the input parameters
-            self.assign_request_handler(request.form)
+            self.assign_request_handler(data)
             return Response("Request handled")
 
 
