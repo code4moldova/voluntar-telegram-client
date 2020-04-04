@@ -33,12 +33,17 @@ class Backender(object):
 
         raise ValueError("Bad response")
 
-    # TODO
     def _post(self, payload, url=""):
         """Function for internal use, it sends POST requests to the server
         :param payload: what needs to be sent within the POST request
         :param url: str, this will be added to the base_url to which the request is sent"""
-        requests.get(self.base_url + url, auth=(self.username, self.password))
+        requests.post(self.base_url + url, auth=(self.username, self.password))
+
+    def _put(self, payload, url=""):
+        """Function for internal use, it sends PUT requests to the server
+        :param payload: what needs to be sent within the PUT request
+        :param url: str, this will be added to the base_url to which the request is sent"""
+        requests.put(self.base_url + url, auth=(self.username, self.password))
 
     def get_request_details(self, request_id):
         """Retrieve the details of a request
@@ -55,10 +60,14 @@ class Backender(object):
         # only take the first element, because we expect there to be a single request with that id
         return raw["list"][0]
 
-    # TODO
     def link_chatid_to_volunteer(self, volunteer_id, chat_id):
         """Tell the backend that a specific volunteer is associated with the given Telegram chat_id"""
         log.debug("Link vol:%s to chat %s", volunteer_id, chat_id)
+        payload = {
+            '_id': volunteer_id,
+            'telegram_chat_id': chat_id
+        }
+        self._put(payload=payload, url='/volunteer')
 
     # TODO
     def upload_shopping_receipt(self, data, request_id):
@@ -69,7 +78,6 @@ class Backender(object):
         :param request_id: str, identifier of request"""
         log.debug("Send receipt (%i bytes) for req:%s", len(data), request_id)
 
-    # TODO
     def relay_offer(self, request_id, volunteer_id, offer):
         """Notify the server that an offer to handle a request was provided by a volunteer. Note that this function
         will be invoked multiple times for the same request, as soon as each volunteer will send their response.
@@ -77,13 +85,23 @@ class Backender(object):
         :param volunteer_id: str, volunteer identifier
         :param offer: TODO the offer indicates when the volunteer will be able to reach the beneficiary"""
         log.debug("Relay offer for req:%s from vol:%s -> %s", request_id, volunteer_id, offer)
+        payload = {
+            '_id': volunteer_id,
+            'offer_beneficiary_id': request_id,
+            'availability_day': offer
+        }
+        self._put(payload=payload, url='/volunteer')
 
-    # TODO
     def update_request_status(self, request_id, status):
         """Change the status of a request, e.g., when a volunteer is on their way, or when the request was fulfilled.
         :param request_id: str, identifier of request
         :param status: TODO indicate what state it is in {new, assigned, in progress, done, something else...}"""
         log.debug("Set req:%s to: `%s`", request_id, status)
+        payload = {
+            '_id': request_id,
+            'status': status
+        }
+        self._put(payload=payload, url='/beneficiary')
 
 
 if __name__ == "__main__":
@@ -93,8 +111,8 @@ if __name__ == "__main__":
 
     # Here you can play around with the backend without involving any of the Telegram-related logic
     url = "http://127.0.0.1:5000/api/"
-    username = "testuser"
-    password = "changethis"
+    username = "test@test.com"
+    password = "adminadmin"
 
     b = Backender(url, username, password)
     result = b.get_request_details("5e84c10a9938cfffc0217ed1")
