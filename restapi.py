@@ -9,9 +9,7 @@ log = logging.getLogger("rest")
 
 
 class BotRestApi(object):
-    def __init__(
-        self, help_request_handler, cancel_request_handler, assign_request_handler
-    ):
+    def __init__(self, help_request_handler, cancel_request_handler, assign_request_handler):
         """Initialize the REST API
         :param help_request_handler: callable, a function that will be invoked when a new request for assistance arrives
         :param cancel_request_handler: callable, will be invoked when a request for assistance was cancelled
