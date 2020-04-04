@@ -3,8 +3,16 @@ import sys
 import os
 from tempfile import NamedTemporaryFile
 
-from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, PicklePersistence
-from telegram import ReplyKeyboardMarkup
+from telegram.ext import (
+    Updater,
+    Filters,
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    # PicklePersistence,  # TODO doesn't propagate updates immediately, ask the lib maintainers why
+    DictPersistence,
+)
+from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext.dispatcher import run_async
 
 
@@ -110,9 +118,55 @@ class Ajubot:
         dispatcher.add_handler(CommandHandler("vreausaajut", self.on_bot_offer_to_help))
         dispatcher.add_handler(CommandHandler("status", self.on_status))
 
+        dispatcher.add_handler(CommandHandler("Da", self.on_accept))
+        dispatcher.add_handler(CommandHandler("Nu", self.on_reject))
+
+        # dispatcher.add_handler(CallbackQueryHandler(self.negotiate_time))
+        dispatcher.add_handler(CallbackQueryHandler(self.negotiate_time, pattern="^eta.*"))
+
         dispatcher.add_handler(MessageHandler(Filters.photo, self.on_photo))
         dispatcher.add_handler(MessageHandler(Filters.contact, self.on_contact))
         dispatcher.add_error_handler(self.on_bot_error)
+
+    def on_reject(self, update, _context):
+        """Invoked when the user presses `No` after receiving a request for help"""
+        self.send_message(update.message.chat_id, c.MSG_THANKS_NOTHANKS)
+
+    def on_accept(self, update, _context):
+        """Invoked when a user presses `Yes` after receiving a request for help"""
+        self.bot.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Alege timpul",
+            reply_markup=InlineKeyboardMarkup(k.build_dynamic_keyboard_first_responses()),
+        )
+
+    def negotiate_time(self, update, context):
+        chat_id = update.effective_chat.id
+        response_code = update.callback_query["data"]  # eta_later, eta_never, eta_20:45, etc.
+        log.info(f"Offer @{update.effective_chat.id} @{response_code}")
+
+        if response_code == "eta_never":
+            # the user pressed the button to say they're cancelling their offer
+            self.send_message(chat_id, c.MSG_THANKS_NOTHANKS)
+            self.bot.persistence.user_data[chat_id]["reviewed_request"] = None
+
+        elif response_code == "eta_later":
+            # Show them more options in the interactive menu
+            self.bot.bot.send_message(
+                chat_id=chat_id,
+                text="Alege timpul",
+                reply_markup=InlineKeyboardMarkup(k.build_dynamic_keyboard()),
+            )
+        else:
+            # This is an actual offer, ot looks like `eta_20:40`, extract the actual timestamp
+            offer = response_code.split("_")[-1]
+
+            # tell the backend about it
+            request_id = self.bot.persistence.user_data[chat_id]["reviewed_request"]
+            self.backend.relay_offer(request_id, chat_id, offer)
+
+            # tell the user that this is now processed by the server
+            self.send_message(chat_id, (c.MSG_ACK_TIME % offer) + c.MSG_COORDINATING)
 
     def on_contact(self, update, context):
         """This is invoked when the user sends us their contact information, which includes their phone number."""
@@ -173,13 +227,13 @@ class Ajubot:
 
         for chat_id in volunteers_to_contact:
             if chat_id not in self.bot.persistence.user_data:
-                log.debug("Got reference to a user who hasn't added the bot to their contacts, skipping.")
+                log.debug("User %s hasn't added the bot to their contacts, skipping.", chat_id)
                 continue
 
-            current_state = self.bot.persistence.user_data[chat_id].get('state', None)
+            current_state = self.bot.persistence.user_data[chat_id].get("state", None)
 
             if current_state in [c.State.REQUEST_IN_PROGRESS, c.State.REQUEST_ASSIGNED]:
-                log.debug('Vol%s is already working on a request, skippint')
+                log.debug("Vol%s is already working on a request, skippint")
                 continue
 
             self.bot.bot.send_message(
@@ -187,10 +241,13 @@ class Ajubot:
                 text=assistance_request,
                 reply_markup=ReplyKeyboardMarkup(k.initial_responses, one_time_keyboard=True),
             )
-            self.bot.persistence.user_data[chat_id] = c.State.REQUEST_SENT
+
+            # update this user's state and keep the request_id as well, so we can use it later
+            self.bot.persistence.user_data[chat_id]["state"] = c.State.REQUEST_SENT
+            self.bot.persistence.user_data[chat_id]["reviewed_request"] = request_id
 
         self.bot.persistence.bot_data[request_id] = data
-        # self.requests[request_id] = data
+        self.bot.persistence.flush()  # just in case, to make sure all the data are persisted
 
     @run_async
     def hook_cancel_assistance(self, raw_data):
@@ -214,7 +271,7 @@ class Ajubot:
         :param chat_id: int, chat identifier
         :param text: str, the text to be sent to the user"""
         self.bot.bot.sendMessage(chat_id=chat_id, text=text)
-        log.info("Send msg @%s: %s..", chat_id, text[:10])
+        log.info("Send msg @%s: %s..", chat_id, text[:20])
 
 
 if __name__ == "__main__":
@@ -239,7 +296,9 @@ if __name__ == "__main__":
     covid_backend = Backender(covid_backend_url, covid_backend_user, covid_backend_pass)
 
     # this will be used to keep some state-related info in a file that survives across bot restarts
-    pickler = PicklePersistence("state.bin")
+    pickler = DictPersistence()
+    # NOTE: the pickled persistence layer doesn't seem to propagate changes instantly, TODO find out why
+    # pickler = PicklePersistence("state.bin")
 
     bot = Updater(token=token, use_context=True, persistence=pickler)
     ajubot = Ajubot(bot, covid_backend)
