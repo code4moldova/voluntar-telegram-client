@@ -4,7 +4,7 @@ import os
 from tempfile import NamedTemporaryFile
 
 from telegram.ext import Updater, Filters, CommandHandler, MessageHandler
-from telegram import ReplyKeyboardMarkup, KeyboardButton
+from telegram import ReplyKeyboardMarkup
 from telegram.ext.dispatcher import run_async
 
 
