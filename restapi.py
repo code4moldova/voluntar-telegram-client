@@ -9,9 +9,7 @@ log = logging.getLogger("rest")
 
 
 class BotRestApi(object):
-    def __init__(
-        self, help_request_handler, cancel_request_handler, assign_request_handler
-    ):
+    def __init__(self, help_request_handler, cancel_request_handler, assign_request_handler):
         """Initialize the REST API
         :param help_request_handler: callable, a function that will be invoked when a new request for assistance arrives
         :param cancel_request_handler: callable, will be invoked when a request for assistance was cancelled
@@ -106,7 +104,7 @@ class BotRestApi(object):
             return Response("Request handled")
 
 
-def run_background(app, interface="0.0.0.0", port=5000):
+def run_background(app, interface="127.0.0.1", port=5000):
     """Run the WSGI app in a separate thread, to make integration into
     other programs (that take over the main loop) easier"""
     from werkzeug.serving import run_simple

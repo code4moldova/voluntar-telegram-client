@@ -5,10 +5,10 @@ help:
 	@echo  ''
 
 autoformat:
-	black *.py
+	black -l 100 *.py
 
 verify:
-	black --check *.py
+	black -l 100 --check *.py
 	flake8 --config=.flake8 *.py
 	# pylint --rcfile=.pylintrc *.py
 	bandit *.py

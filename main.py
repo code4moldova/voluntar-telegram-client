@@ -1,13 +1,12 @@
 import logging
 import sys
 import os
+from tempfile import NamedTemporaryFile
 
-from telegram.ext import (
-    Updater,
-    CommandHandler,
-)
+from telegram.ext import Updater, Filters, CommandHandler, MessageHandler
 from telegram import ReplyKeyboardMarkup
 from telegram.ext.dispatcher import run_async
+
 
 import constants as c
 import keyboards as k
@@ -22,15 +21,16 @@ class Ajubot:
         :param bot: instance of Telegram bot object"""
         self.bot = bot
         self.rest = restapi.BotRestApi(
-            self.hook_request_assistance,
-            self.hook_cancel_assistance,
-            self.hook_assign_assistance,
+            self.hook_request_assistance, self.hook_cancel_assistance, self.hook_assign_assistance,
         )
 
     def serve(self):
         """The main loop"""
         log.info("Starting REST API in separate thread")
-        restapi.run_background(self.rest)
+
+        # NOTE: The bandit security checker will rightfully complain that we're binding to all interfaces.
+        # TODO discuss this detail once we have a better idea about the deployment environment
+        restapi.run_background(self.rest, "0.0.0.0", 5001)  # nosec
 
         log.info("Starting bot handlers")
         self.init_bot()
@@ -91,7 +91,30 @@ class Ajubot:
         dispatcher.add_handler(CommandHandler("about", self.on_bot_about))
         dispatcher.add_handler(CommandHandler("vreausaajut", self.on_bot_offer_to_help))
 
+        dispatcher.add_handler(MessageHandler(Filters.photo, self.on_photo))
+
         dispatcher.add_error_handler(self.on_bot_error)
+
+    @staticmethod
+    def on_photo(update, _context):
+        """Invoked when the user sends a photo to the bot. In our case, photos are always shopping receipts. Keep in
+        mind that there could be multiple photos in a message."""
+        user = update.effective_user
+        photo_count = len(update.message.photo)
+        log.info(
+            f"PHOTO from {user.username}, {user.full_name}, @{update.effective_chat.id}, #{photo_count}"
+        )
+
+        # Process each photo
+        for entry in update.message.photo:
+            raw_image = entry.get_file().download_as_bytearray()
+
+            # At this point the image is in the memory
+            with NamedTemporaryFile(delete=False, prefix=update.effective_chat.id) as f:
+                f.write(raw_image)
+                log.debug("Image written to %s", f.name)
+
+        # TODO Send it to the server via REST
 
     @run_async
     def hook_request_assistance(self, raw_data):
