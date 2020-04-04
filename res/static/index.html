@@ -16,9 +16,10 @@ function sendAssignRequest() {
 </script>
 <body>
 
-<h2>Simulate a request that came from the backend</h2>
+<div style="float:left;">
+<h2>Simulate a request from the backend</h2>
 Paste your JSON here:<br>
-<textarea id="payload" cols="60" rows="30">
+<textarea id="payload" cols="60" rows="20">
 {
   "request_id": "fe91e4b6-e902-4d03-8500-d058673cb9bd",
   "beneficiary": "Martina Cojocaru",
@@ -41,8 +42,10 @@ Paste your JSON here:<br>
 </textarea>
 <br><br>
 <input type="submit" value="Send" onclick="sendRequest()">
+</div>
 
-<h2>Simulate an <strong>assign</strong> request that came from the backend</h2>
+<div style="float:left;">
+<h2>Simulate <strong>assign</strong> request from the backend</h2>
 Paste your JSON here:<br>
 <textarea id="payload_assign" cols="60" rows="10">
 {
@@ -53,7 +56,7 @@ Paste your JSON here:<br>
 </textarea>
 <br><br>
 <input type="submit" value="Send" onclick="sendAssignRequest()">
-
+</div>
 
 </body>
 </html>

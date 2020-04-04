@@ -315,6 +315,7 @@ class Ajubot:
         assignee_chat_id = data['volunteer']
         log.info("ASSIGN req:%s to vol:%s", request_id, assignee_chat_id)
 
+        # TODO investigate why the persistence layer doesn't contain the data we need
         log.info('JJJJJJ %s', self.bot.persistence.bot_data)
         # import pdb; pdb.set_trace()
         try:
