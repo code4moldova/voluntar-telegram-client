@@ -4,7 +4,7 @@ import os
 from tempfile import NamedTemporaryFile
 
 from telegram.ext import Updater, Filters, CommandHandler, MessageHandler
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext.dispatcher import run_async
 
 
@@ -58,12 +58,13 @@ class Ajubot:
         )
         update.message.reply_text(f"Bine ai venit, {user.username or user.full_name}.")
 
-        context.bot.sendMessage(
+        context.bot.send_message(
             chat_id=update.message.chat_id,
-            text="test",
-            parse_mode="HTML",
-            reply_markup=ReplyKeyboardMarkup(k.default_board, one_time_keyboard=True),
+            text=c.MSG_PHONE_QUERY,
+            reply_markup=ReplyKeyboardMarkup([[k.contact_keyboard]], one_time_keyboard=True),
         )
+
+        # TODO mark this user's context, that we're expecting their phone number
 
     @staticmethod
     def on_bot_help(update, context):
@@ -95,8 +96,27 @@ class Ajubot:
         dispatcher.add_handler(CommandHandler("vreausaajut", self.on_bot_offer_to_help))
 
         dispatcher.add_handler(MessageHandler(Filters.photo, self.on_photo))
-
+        dispatcher.add_handler(MessageHandler(Filters.contact, self.on_contact))
         dispatcher.add_error_handler(self.on_bot_error)
+
+    def on_contact(self, update, _context):
+        """This is invoked when the user sends us their contact information, which includes their phone number."""
+        user = update.effective_user
+        phone = update.message.contact.phone_number
+        log.info(
+            f"TEL from {user.username}, {user.full_name}, @{update.effective_chat.id}, {phone}"
+        )
+
+        # Here's an example of what else you can find in update['message'].contact.to_dict()
+        # {'phone_number': '+4500072470000', 'first_name': 'Alex', 'user_id': 253150000}
+        # And some user-related details in update.effective_user.to_dict()
+        # {'first_name': 'Alex', 'id': 253150000, 'is_bot': False, 'language_code': 'en', 'username': 'ralienpp'}
+
+        # Tell the backend about it, such that from now on it knows which chat_id corresponds to this user
+        self.backend.link_chatid_to_volunteer(user.username, update.effective_chat.id, phone)
+
+        # Acknowledge receipt and tell the user that we'll contact them when new requests arrive
+        update.message.reply_text(c.MSG_STANDBY)
 
     @staticmethod
     def on_photo(update, _context):
