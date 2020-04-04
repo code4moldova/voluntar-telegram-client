@@ -73,14 +73,12 @@ Payload sample `assistance_request` (TODO discuss):
         "request_id": "fe91e4b6-e902-4d03-8500-d058673cb9bd",
         "beneficiary": "Martina Cojocaru",
         "address": "str. 31 August",
-        "needs": "Medicamente, produse alimentare,
+        "needs": ["Medicamente", "Produse alimentare"],
         "gotSymptoms": false,
-        "isInfected": false,
         "safetyCode": "Izvor-45",
         "phoneNumber": "+373 777 77 777",
         "remarks": ["Nu lucreaza ascensorul", "Are caine rau"],
-        "gotFunds": true
-        "volunteers": ["theresa", "curcudush", "priquindel"]
+        "volunteers": ["chat_id1", "chat_id2", "chat_idN"]
       }
 
 
