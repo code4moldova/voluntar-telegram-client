@@ -170,7 +170,6 @@ if __name__ == "__main__":
     except KeyError as key:
         sys.exit(f"Set {key} environment variable before running the bot")
 
-
     covid_backend = Backender(covid_backend_url, covid_backend_user, covid_backend_pass)
 
     bot = Updater(token=token, use_context=True)
