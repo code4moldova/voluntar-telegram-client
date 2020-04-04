@@ -37,13 +37,13 @@ class Backender(object):
         """Function for internal use, it sends POST requests to the server
         :param payload: what needs to be sent within the POST request
         :param url: str, this will be added to the base_url to which the request is sent"""
-        requests.post(self.base_url + url, auth=(self.username, self.password))
+        requests.post(self.base_url + url, auth=(self.username, self.password), json=payload)
 
     def _put(self, payload, url=""):
         """Function for internal use, it sends PUT requests to the server
         :param payload: what needs to be sent within the PUT request
         :param url: str, this will be added to the base_url to which the request is sent"""
-        requests.put(self.base_url + url, auth=(self.username, self.password))
+        requests.put(self.base_url + url, auth=(self.username, self.password), json=payload)
 
     def get_request_details(self, request_id):
         """Retrieve the details of a request
@@ -66,12 +66,8 @@ class Backender(object):
         :param chat_id: int, numerical chat_id that uniquely identifies the user's session with the bot in Telegram
         :param phone: str, phone number, full representation, e.g.:'+37379000000'"""
         log.debug("Link vol:%s to chat %s and tel %s", nickname, chat_id, phone)
-        payload = {
-            'telegram_id': nickname,
-            'telegram_chat_id': chat_id,
-            'phone': phone
-        }
-        self._put(payload=payload, url='/volunteer')
+        payload = {"telegram_id": nickname, "telegram_chat_id": chat_id, "phone": phone}
+        self._put(payload=payload, url="/volunteer")
 
     # TODO
     def upload_shopping_receipt(self, data, request_id):
@@ -81,6 +77,8 @@ class Backender(object):
         :param data: bytearray, raw data corresponding to the image
         :param request_id: str, identifier of request"""
         log.debug("Send receipt (%i bytes) for req:%s", len(data), request_id)
+        payload = {"beneficiary_id": request_id, "data": data}
+        self._post(payload=payload, url="/")
 
     def relay_offer(self, request_id, volunteer_id, offer):
         """Notify the server that an offer to handle a request was provided by a volunteer. Note that this function
@@ -90,22 +88,19 @@ class Backender(object):
         :param offer: TODO the offer indicates when the volunteer will be able to reach the beneficiary"""
         log.debug("Relay offer for req:%s from vol:%s -> %s", request_id, volunteer_id, offer)
         payload = {
-            '_id': volunteer_id,
-            'offer_beneficiary_id': request_id,
-            'availability_day': offer
+            "_id": volunteer_id,
+            "offer_beneficiary_id": request_id,
+            "availability_day": offer,
         }
-        self._put(payload=payload, url='/volunteer')
+        self._put(payload=payload, url="/volunteer")
 
     def update_request_status(self, request_id, status):
         """Change the status of a request, e.g., when a volunteer is on their way, or when the request was fulfilled.
         :param request_id: str, identifier of request
         :param status: TODO indicate what state it is in {new, assigned, in progress, done, something else...}"""
         log.debug("Set req:%s to: `%s`", request_id, status)
-        payload = {
-            '_id': request_id,
-            'status': status
-        }
-        self._put(payload=payload, url='/beneficiary')
+        payload = {"_id": request_id, "status": status}
+        self._put(payload=payload, url="/beneficiary")
 
 
 if __name__ == "__main__":
