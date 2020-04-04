@@ -10,15 +10,15 @@
 
                                                                       +--------------------+
                                                                       |    pool of fixers  |
-                          +--------------------------------+          |  F1, F2, .. Fn     |
-                          |                                |          +--+-----------------+
-                          |   +-----------------+          |             |
-                          |   | nickname-chat   |          |             |  the fixer uses the UI to
-                          |   |   KV-store      |          |             |  add new help requests
-                          |   +---------^-------+          |             |  to the system
-+--------------+          |             |                  |             |
-|              |  notify  |             |                  |         +---v---------------+
-|   pool of    |  and     |   +---------v-------+          |         |    frontend       |
+                                                                      |  F1, F2, .. Fn     |
+                                                                      +--+-----------------+
+                                                                         |
+                                                                         |  the fixer uses the UI to
+                                                                         |  add new help requests
+                                                                         |  to the system
++--------------+          +--------------------------------+             |
+|              |  notify  |                                |         +---v---------------+
+|   pool of    |  and     |   +-----------------+          +         |    frontend       |
 |   volunteers |  interact|   |   Telegram bot  |     feedack via    |                   |
 |              <-------------->                 |     REST API       +-------------------+
 |   Vol_1      |          |   |                 +----------+----+             |new
@@ -36,20 +36,13 @@
                           |                 (this repo)    |
                           +--------------------------------+
 
-
 ```
 
 Legend:
 
+- `backend` - a running instance of https://github.com/code4moldova/covid19md-voluntari-server
 - `REST API` is invoked by the backend to notify the bot about new requests for assistance. This eliminates the need for
 the bot to continuously poll the backend for new requests.
-- `nickname-chat KV`: Telegram operates with a `chat_id` when sending a message to a user, whereas the backend only knows
-of the volunteers' nicknames. When a volunteer adds the bot to their contact list, the bot receives the `chat_id` and
-the `nickname` (the same nickname that the backend knows about). This is saved in the KV store, such that in
-the future, when the backend notifies the bot about a new request for assistance (including a list of nicknames of
-volunteers to contact), we'll know which `chat_id` corresponds to each volunteer. TODO: ideally, the backend should
-send us a list of `(chat_id, nickname)` tuples, so we don't need this KV store here at all.
-
 
 ## Endpoints
 
@@ -67,7 +60,7 @@ The following endpoints are used for interaction between the backend and the Tel
     
 ## Payloads
 
-Payload sample `assistance_request` (TODO discuss):
+Payload sample `assistance_request`:
 
     {
         "request_id": "fe91e4b6-e902-4d03-8500-d058673cb9bd",
@@ -80,6 +73,18 @@ Payload sample `assistance_request` (TODO discuss):
         "remarks": ["Nu lucreaza ascensorul", "Are caine rau"],
         "volunteers": ["chat_id1", "chat_id2", "chat_idN"]
       }
+
+
+
+## Bot's state
+Some information is stored in a persistent context that survives bot restarts. This information is needed to keep track
+of entities throughout their lifecycle. The state is a dictionary.
+
+### User related
+
+- `state` - `{EXPECTING_PHONE_NUMBER, ONBOARD_COMPLETE ...}`
+- `current_request` - a string with the ID of the request that is currently handled by this user. Can be `None` if no
+request is currently handled.
 
 
 
