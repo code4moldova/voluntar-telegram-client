@@ -11,15 +11,18 @@ from telegram.ext.dispatcher import run_async
 import constants as c
 import keyboards as k
 import restapi
+from backend_api import Backender
 
 log = logging.getLogger("ajubot")
 
 
 class Ajubot:
-    def __init__(self, bot):
+    def __init__(self, bot, backend):
         """Constructor
-        :param bot: instance of Telegram bot object"""
+        :param bot: instance of Telegram bot object
+        :param backend: instance of a Backender object, responsible for dealing with the Covid server"""
         self.bot = bot
+        self.backend = backend
         self.rest = restapi.BotRestApi(
             self.hook_request_assistance, self.hook_cancel_assistance, self.hook_assign_assistance,
         )
@@ -161,11 +164,16 @@ if __name__ == "__main__":
 
     try:
         token = os.environ["TELEGRAM_TOKEN"]
-    except KeyError:
-        sys.exit("Set TELEGRAM_TOKEN environment variable before running the bot")
+        covid_backend_url = os.environ["COVID_BACKEND"]
+        covid_backend_user = os.environ["COVID_BACKEND_USER"]
+        covid_backend_pass = os.environ["COVID_BACKEND_PASS"]
+    except KeyError as key:
+        sys.exit(f"Set {key} environment variable before running the bot")
+
+    covid_backend = Backender(covid_backend_url, covid_backend_user, covid_backend_pass)
 
     bot = Updater(token=token, use_context=True)
-    ajubot = Ajubot(bot)
+    ajubot = Ajubot(bot, covid_backend)
 
     try:
         ajubot.serve()
