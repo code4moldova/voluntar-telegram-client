@@ -13,6 +13,8 @@ import logging
 
 import requests
 
+import base64
+
 log = logging.getLogger("back")
 
 
@@ -67,7 +69,7 @@ class Backender(object):
         :param phone: str, phone number, full representation, e.g.:'+37379000000'"""
         log.debug("Link vol:%s to chat %s and tel %s", nickname, chat_id, phone)
         payload = {"telegram_id": nickname, "telegram_chat_id": chat_id, "phone": phone}
-        self._put(payload=payload, url="/volunteer")
+        self._put(payload=payload, url="volunteer")
 
     # TODO
     def upload_shopping_receipt(self, data, request_id):
@@ -77,8 +79,8 @@ class Backender(object):
         :param data: bytearray, raw data corresponding to the image
         :param request_id: str, identifier of request"""
         log.debug("Send receipt (%i bytes) for req:%s", len(data), request_id)
-        payload = {"beneficiary_id": request_id, "data": data}
-        self._post(payload=payload, url="/")
+        payload = {"beneficiary_id": request_id, "data": base64.b64encode(data).decode()}
+        self._post(payload=payload, url="receipt")
 
     def relay_offer(self, request_id, volunteer_id, offer):
         """Notify the server that an offer to handle a request was provided by a volunteer. Note that this function
@@ -92,7 +94,7 @@ class Backender(object):
             "offer_beneficiary_id": request_id,
             "availability_day": offer,
         }
-        self._put(payload=payload, url="/volunteer")
+        self._put(payload=payload, url="volunteer")
 
     def update_request_status(self, request_id, status):
         """Change the status of a request, e.g., when a volunteer is on their way, or when the request was fulfilled.
@@ -100,7 +102,7 @@ class Backender(object):
         :param status: TODO indicate what state it is in {new, assigned, in progress, done, something else...}"""
         log.debug("Set req:%s to: `%s`", request_id, status)
         payload = {"_id": request_id, "status": status}
-        self._put(payload=payload, url="/beneficiary")
+        self._put(payload=payload, url="beneficiary")
 
 
 if __name__ == "__main__":
