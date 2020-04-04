@@ -3,7 +3,7 @@ import sys
 import os
 from tempfile import NamedTemporaryFile
 
-from telegram.ext import Updater, Filters, CommandHandler, MessageHandler
+from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, PicklePersistence
 from telegram import ReplyKeyboardMarkup
 from telegram.ext.dispatcher import run_async
 
@@ -26,6 +26,9 @@ class Ajubot:
         self.rest = restapi.BotRestApi(
             self.hook_request_assistance, self.hook_cancel_assistance, self.hook_assign_assistance,
         )
+
+        # this will contain incoming assistance requests, the key is the requestID and the value is its payload
+        self.requests = {}
 
     def serve(self):
         """The main loop"""
@@ -64,7 +67,8 @@ class Ajubot:
             reply_markup=ReplyKeyboardMarkup([[k.contact_keyboard]], one_time_keyboard=True),
         )
 
-        # TODO mark this user's context, that we're expecting their phone number
+        # set some context data about this user, so we can rely on this later
+        context.user_data["state"] = c.State.EXPECTING_PHONE_NUMBER
 
     @staticmethod
     def on_bot_help(update, context):
@@ -87,6 +91,16 @@ class Ajubot:
         """Log Errors caused by Updates."""
         log.warning('Update "%s" caused error "%s"', update, context.error)
 
+    @staticmethod
+    def on_status(update, context):
+        """Invoked when the user sends the /status command. At the moment this is only intended for debugging
+        purposes, but it may be handy if the user has a queue of multiple requests"""
+        current_state = context.user_data["state"]
+        current_request = context.user_data.get("current_request", None)
+        message = f"State: {current_state}\nRequest: {current_request}"
+
+        context.bot.send_message(chat_id=update.message.chat_id, text=message)
+
     def init_bot(self):
         dispatcher = self.bot.dispatcher
 
@@ -94,12 +108,13 @@ class Ajubot:
         dispatcher.add_handler(CommandHandler("help", self.on_bot_help))
         dispatcher.add_handler(CommandHandler("about", self.on_bot_about))
         dispatcher.add_handler(CommandHandler("vreausaajut", self.on_bot_offer_to_help))
+        dispatcher.add_handler(CommandHandler("status", self.on_status))
 
         dispatcher.add_handler(MessageHandler(Filters.photo, self.on_photo))
         dispatcher.add_handler(MessageHandler(Filters.contact, self.on_contact))
         dispatcher.add_error_handler(self.on_bot_error)
 
-    def on_contact(self, update, _context):
+    def on_contact(self, update, context):
         """This is invoked when the user sends us their contact information, which includes their phone number."""
         user = update.effective_user
         phone = update.message.contact.phone_number
@@ -118,8 +133,10 @@ class Ajubot:
         # Acknowledge receipt and tell the user that we'll contact them when new requests arrive
         update.message.reply_text(c.MSG_STANDBY)
 
-    @staticmethod
-    def on_photo(update, _context):
+        # Mark the user as 'onboarded
+        context.user_data["state"] = c.State.ONBOARD_COMPLETE
+
+    def on_photo(self, update, context):
         """Invoked when the user sends a photo to the bot. In our case, photos are always shopping receipts. Keep in
         mind that there could be multiple photos in a message."""
         user = update.effective_user
@@ -137,14 +154,29 @@ class Ajubot:
                 f.write(raw_image)
                 log.debug("Image written to %s", f.name)
 
-        # TODO Send it to the server via REST
+            self.backend.upload_shopping_receipt(raw_image, context.user_data["current_request"])
 
     @run_async
-    def hook_request_assistance(self, raw_data):
+    def hook_request_assistance(self, data):
         """This will be invoked by the REST API when a new request for
         assistance was received from the backend.
-        :param raw_data: TODO: discuss payload format, see readme"""
-        log.info("NEW request for assistance")
+        :param data: dict, the format is defined in `assistance_request`, see readme"""
+        request_id = data["request_id"]
+        log.info("NEW request for assistance %s", request_id)
+        volunteers_to_contact = data["volunteers"]
+
+        needs = ""
+        for item in data["needs"]:
+            needs += f"- {item}\n"
+
+        assistance_request = c.MSG_REQUEST_ANNOUNCEMENT % (data["address"], needs)
+
+        for chat_id in volunteers_to_contact:
+            self.send_message(chat_id, assistance_request)
+            # TODO update volunteer's state
+            # TODO send a keyboard reply with options
+
+        self.requests[request_id] = data
 
     @run_async
     def hook_cancel_assistance(self, raw_data):
@@ -168,7 +200,7 @@ class Ajubot:
         :param chat_id: int, chat identifier
         :param text: str, the text to be sent to the user"""
         self.bot.bot.sendMessage(chat_id=chat_id, text=text)
-        log.info("Send msg @%s: %s", chat_id, text)
+        log.info("Send msg @%s: %s..", chat_id, text[:10])
 
 
 if __name__ == "__main__":
@@ -192,7 +224,10 @@ if __name__ == "__main__":
 
     covid_backend = Backender(covid_backend_url, covid_backend_user, covid_backend_pass)
 
-    bot = Updater(token=token, use_context=True)
+    # this will be used to keep some state-related info in a file that survives across bot restarts
+    pickler = PicklePersistence("state.bin")
+
+    bot = Updater(token=token, use_context=True, persistence=pickler)
     ajubot = Ajubot(bot, covid_backend)
 
     try:
