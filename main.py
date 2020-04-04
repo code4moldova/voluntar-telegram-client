@@ -172,11 +172,25 @@ class Ajubot:
         assistance_request = c.MSG_REQUEST_ANNOUNCEMENT % (data["address"], needs)
 
         for chat_id in volunteers_to_contact:
-            self.send_message(chat_id, assistance_request)
-            # TODO update volunteer's state
-            # TODO send a keyboard reply with options
+            if chat_id not in self.bot.persistence.user_data:
+                log.debug("Got reference to a user who hasn't added the bot to their contacts, skipping.")
+                continue
 
-        self.requests[request_id] = data
+            current_state = self.bot.persistence.user_data[chat_id].get('state', None)
+
+            if current_state in [c.State.REQUEST_IN_PROGRESS, c.State.REQUEST_ASSIGNED]:
+                log.debug('Vol%s is already working on a request, skippint')
+                continue
+
+            self.bot.bot.send_message(
+                chat_id=chat_id,
+                text=assistance_request,
+                reply_markup=ReplyKeyboardMarkup(k.initial_responses, one_time_keyboard=True),
+            )
+            self.bot.persistence.user_data[chat_id] = c.State.REQUEST_SENT
+
+        self.bot.persistence.bot_data[request_id] = data
+        # self.requests[request_id] = data
 
     @run_async
     def hook_cancel_assistance(self, raw_data):
