@@ -1,5 +1,6 @@
 import logging
 from threading import Thread
+import json
 
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
@@ -55,16 +56,14 @@ class BotRestApi(object):
             return MethodNotAllowed()
 
         if request.method == "POST":
-            log.debug("Got request: `%s`", request.form)
-            if False:
-                # TODO verify if the payload has all the required data
-                # TODO define parameters in the data
-                # do some processing, if there are any issues, return an error
+            try:
+                data = json.loads(request.get_data())
+            except json.decoder.JSONDecodeError:
                 return BadRequest("Request malformed")
 
             # if we got this far, it means we're ok, so we invoke the function that does the job
             # and pass it the input parameters
-            self.help_request_handler(request.form)
+            self.help_request_handler(data)
             return Response("Request handled")
 
     def on_cancel_help_request(self, request):

@@ -94,10 +94,11 @@ if __name__ == "__main__":
         level=logging.DEBUG, format="%(asctime)s %(levelname)5s %(name)5s - %(message)s"
     )
 
-    # Here you can play around with the backend without involving any of the Telegram-related logic
+    # Here you can play around with the backend without involving any of the Telegram-related logic. Change these
+    # credentials before running the demo
     url = "http://127.0.0.1:5000/api/"
     username = "testuser"
-    password = "changethis"
+    password = "changethis"  # nosec
 
     b = Backender(url, username, password)
     result = b.get_request_details("5e84c10a9938cfffc0217ed1")
