@@ -91,7 +91,7 @@ Payload sample `assistance_request` (TODO discuss):
 3. Set the `TELEGRAM_TOKEN` environment variable to the token, e.g. `export TELEGRAM_TOKEN=1123test`
 4. Run `python main.py`
 
-Optionally, you can open http://localhost:5000 to send an example of a payload, simulating an actual request that came
+Optionally, you can open http://localhost:5001 to send an example of a payload, simulating an actual request that came
 from the backend.
 
 
@@ -105,5 +105,5 @@ from the backend.
 # How to use the Docker image
 
 1. Build it first: `docker build -t covid-tg-bot .`. Run `docker images` to ensure it is in the list.
-2. Run it with: `docker run --rm -it -p 5000:5000 -e TELEGRAM_TOKEN='----replace-token-here' covid-tg-bot` (adjust to
+2. Run it with: `docker run --rm -it -p 5001:5001 -e TELEGRAM_TOKEN='----replace-token-here' covid-tg-bot` (adjust to
 taste, for example you might want to remove `--rm`)

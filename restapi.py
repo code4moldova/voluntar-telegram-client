@@ -104,7 +104,7 @@ class BotRestApi(object):
             return Response("Request handled")
 
 
-def run_background(app, interface="0.0.0.0", port=5000):
+def run_background(app, interface="127.0.0.1", port=5000):
     """Run the WSGI app in a separate thread, to make integration into
     other programs (that take over the main loop) easier"""
     from werkzeug.serving import run_simple

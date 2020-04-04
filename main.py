@@ -27,7 +27,10 @@ class Ajubot:
     def serve(self):
         """The main loop"""
         log.info("Starting REST API in separate thread")
-        restapi.run_background(self.rest)
+
+        # NOTE: The bandit security checker will rightfully complain that we're binding to all interfaces.
+        # TODO discuss this detail once we have a better idea about the deployment environment
+        restapi.run_background(self.rest, "0.0.0.0", 5001)  # nosec
 
         log.info("Starting bot handlers")
         self.init_bot()
