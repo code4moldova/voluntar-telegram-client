@@ -56,9 +56,12 @@ class Backender(object):
         return raw["list"][0]
 
     # TODO
-    def link_chatid_to_volunteer(self, volunteer_id, chat_id):
-        """Tell the backend that a specific volunteer is associated with the given Telegram chat_id"""
-        log.debug("Link vol:%s to chat %s", volunteer_id, chat_id)
+    def link_chatid_to_volunteer(self, nickname, chat_id, phone):
+        """Tell the backend that we've got a new bot user, along with their phone number, chat_id and nickname.
+        :param nickname: optional str, Telegram nickname of the user, may be None if the nickname is not set
+        :param chat_id: int, numerical chat_id that uniquely identifies the user's session with the bot in Telegram
+        :param phone: str, phone number, full representation, e.g.:'+37379000000'"""
+        log.debug("Link vol:%s to chat %s and tel %s", nickname, chat_id, phone)
 
     # TODO
     def upload_shopping_receipt(self, data, request_id):
