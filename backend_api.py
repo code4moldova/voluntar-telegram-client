@@ -1,5 +1,15 @@
+"""This module is a standalone client for the backend API. It is meant to keep the logic of the Telegram bot
+separated from the backend interaction, to avoid tight coupling. The Telegram bot will only use the functions
+of the `Backender` class, without being aware of what these functions are doing underneath.
+
+Keep this in mind as you update this file: any function that starts with an underscore _ is not expected to be
+invoked by the Telegram bot. All the other functions are assumed to be used by others, so make sure their
+prototype is not changed unless there is a good reason.
+
+The easiest way to work on this client is to run `python backend_api.py`, adjusting the contents after
+`if __name__ == "__main__"` - this way you can test it without touching any Telegram functionality whatsoever."""
+
 import logging
-import json
 
 import requests
 
