@@ -25,11 +25,11 @@ log = logging.getLogger("ajubot")
 
 
 class Ajubot:
-    def __init__(self, bot, backend):
+    def __init__(self, updater, backend):
         """Constructor
-        :param bot: instance of Telegram bot object
+        :param updater: instance of Telegram updater object
         :param backend: instance of a Backender object, responsible for dealing with the Covid server"""
-        self.bot = bot
+        self.updater = updater
         self.backend = backend
         self.rest = restapi.BotRestApi(
             self.hook_request_assistance, self.hook_cancel_assistance, self.hook_assign_assistance,
@@ -48,8 +48,8 @@ class Ajubot:
 
         log.info("Starting bot handlers")
         self.init_bot()
-        self.bot.start_polling()
-        self.bot.idle()
+        self.updater.start_polling()
+        self.updater.idle()
 
     @staticmethod
     def get_params(raw):
@@ -110,7 +110,7 @@ class Ajubot:
         context.bot.send_message(chat_id=update.message.chat_id, text=message)
 
     def init_bot(self):
-        dispatcher = self.bot.dispatcher
+        dispatcher = self.updater.dispatcher
 
         dispatcher.add_handler(CommandHandler("start", self.on_bot_start))
         dispatcher.add_handler(CommandHandler("help", self.on_bot_help))
@@ -137,7 +137,7 @@ class Ajubot:
 
     def on_accept(self, update, _context):
         """Invoked when a user presses `Yes` after receiving a request for help"""
-        self.bot.bot.send_message(
+        self.updater.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Alege timpul",
             reply_markup=InlineKeyboardMarkup(k.build_dynamic_keyboard_first_responses()),
@@ -169,7 +169,7 @@ class Ajubot:
                     message += '- %s\n' % remark
 
             message += '\n' + c.MSG_LET_ME_KNOW
-            self.bot.bot.send_message(
+            self.updater.bot.send_message(
                 chat_id=chat_id,
                 text=message,
                 parse_mode=ParseMode.MARKDOWN,
@@ -198,7 +198,7 @@ class Ajubot:
 
         elif response_code == "eta_later":
             # Show them more options in the interactive menu
-            self.bot.bot.send_message(
+            self.updater.bot.send_message(
                 chat_id=chat_id,
                 text="Alege timpul",
                 reply_markup=InlineKeyboardMarkup(k.build_dynamic_keyboard()),
@@ -272,17 +272,17 @@ class Ajubot:
         assistance_request = c.MSG_REQUEST_ANNOUNCEMENT % (data["address"], needs)
 
         for chat_id in volunteers_to_contact:
-            if chat_id not in self.bot.persistence.user_data:
-                log.debug("User %s hasn't added the bot to their contacts, skipping.", chat_id)
+            if chat_id not in self.updater.persistence.user_data:
+                log.debug("User %s hasn't added the updater to their contacts, skipping.", chat_id)
                 continue
 
-            current_state = self.bot.persistence.user_data[chat_id].get("state", None)
+            current_state = self.updater.persistence.user_data[chat_id].get("state", None)
 
             if current_state in [c.State.REQUEST_IN_PROGRESS, c.State.REQUEST_ASSIGNED]:
                 log.debug("Vol%s is already working on a request, skippint")
                 continue
 
-            self.bot.bot.send_message(
+            self.updater.bot.send_message(
                 chat_id=chat_id,
                 text=assistance_request,
                 parse_mode=ParseMode.MARKDOWN,
@@ -290,14 +290,14 @@ class Ajubot:
             )
 
             # update this user's state and keep the request_id as well, so we can use it later
-            self.bot.persistence.user_data[chat_id]["state"] = c.State.REQUEST_SENT
-            self.bot.persistence.user_data[chat_id]["reviewed_request"] = request_id
+            self.updater.persistence.user_data[chat_id]["state"] = c.State.REQUEST_SENT
+            self.updater.persistence.user_data[chat_id]["reviewed_request"] = request_id
 
         log.info('Adding request to store JJJJJJ')
-        self.bot.persistence.bot_data[request_id] = data
-        log.info('JJJJJJ %s', self.bot.persistence.bot_data)
-        # self.bot.persistence.update_bot_data()
-        # self.bot.persistence.flush()  # just in case, to make sure all the data are persisted
+        self.updater.persistence.bot_data[request_id] = data
+        log.info('JJJJJJ %s', self.updater.persistence.bot_data)
+        # self.updater.persistence.update_bot_data()
+        # self.updater.persistence.flush()  # just in case, to make sure all the data are persisted
 
     @run_async
     def hook_cancel_assistance(self, raw_data):
@@ -316,10 +316,10 @@ class Ajubot:
         log.info("ASSIGN req:%s to vol:%s", request_id, assignee_chat_id)
 
         # TODO investigate why the persistence layer doesn't contain the data we need
-        log.info('JJJJJJ %s', self.bot.persistence.bot_data)
+        log.info('JJJJJJ %s', self.updater.persistence.bot_data)
         # import pdb; pdb.set_trace()
         try:
-            request_details = self.bot.persistence.bot_data[request_id]
+            request_details = self.updater.persistence.bot_data[request_id]
         except KeyError as err:
             log.debug('No such request %s, ignoring', request_id)
             return
@@ -331,12 +331,12 @@ class Ajubot:
         for chat_id in request_details['volunteers']:
             if chat_id != assignee_chat_id:
                 self.send_message(chat_id, c.MSG_ANOTHER_ASSIGNEE)
-                self.bot.persistence.user_data[chat_id]["reviewed_request"] = None
-                self.bot.persistence.user_data[chat_id]["status"] = c.State.AVAILABLE
+                self.updater.persistence.user_data[chat_id]["reviewed_request"] = None
+                self.updater.persistence.user_data[chat_id]["status"] = c.State.AVAILABLE
 
         # notify the assigned volunteer, so they know they're responsible; at this point they still have to confirm
         # that they're in good health and they still have an option to cancel
-        self.bot.bot.send_message(
+        self.updater.bot.send_message(
             chat_id=assignee_chat_id,
             text=c.MSG_CAUTION,
             reply_markup=InlineKeyboardMarkup(k.caution_choices)
@@ -347,7 +347,7 @@ class Ajubot:
         """Send a message to a specific chat session
         :param chat_id: int, chat identifier
         :param text: str, the text to be sent to the user"""
-        self.bot.bot.sendMessage(chat_id=chat_id, text=text)
+        self.updater.bot.sendMessage(chat_id=chat_id, text=text)
         log.info("Send msg @%s: %s..", chat_id, text[:20])
 
 
@@ -377,8 +377,8 @@ if __name__ == "__main__":
     # NOTE: the pickled persistence layer doesn't seem to propagate changes instantly, TODO find out why
     pickler = PicklePersistence("state.bin")
 
-    bot = Updater(token=token, use_context=True, persistence=pickler)
-    ajubot = Ajubot(bot, covid_backend)
+    updater = Updater(token=token, use_context=True, persistence=pickler)
+    ajubot = Ajubot(updater, covid_backend)
 
     try:
         ajubot.serve()
