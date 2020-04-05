@@ -9,8 +9,7 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     CallbackQueryHandler,
-    PicklePersistence,  # TODO doesn't propagate updates immediately, ask the lib maintainers why
-    DictPersistence,
+    PicklePersistence
 )
 from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, ParseMode
 from telegram.ext.dispatcher import run_async
@@ -34,9 +33,6 @@ class Ajubot:
         self.rest = restapi.BotRestApi(
             self.hook_request_assistance, self.hook_cancel_assistance, self.hook_assign_assistance,
         )
-
-        # this will contain incoming assistance requests, the key is the requestID and the value is its payload
-        self.requests = {}
 
     def serve(self):
         """The main loop"""
@@ -117,13 +113,10 @@ class Ajubot:
         dispatcher.add_handler(CommandHandler("about", self.on_bot_about))
         dispatcher.add_handler(CommandHandler("vreausaajut", self.on_bot_offer_to_help))
         dispatcher.add_handler(CommandHandler("status", self.on_status))
-
         dispatcher.add_handler(CommandHandler("Da", self.on_accept))
         dispatcher.add_handler(CommandHandler("Nu", self.on_reject))
 
-        # dispatcher.add_handler(CallbackQueryHandler(self.negotiate_time))
         dispatcher.add_handler(CallbackQueryHandler(self.negotiate_time, pattern="^eta.*"))
-
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_dispatch, pattern="^caution.*"))
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_handle, pattern="^handle.*"))
 
@@ -190,7 +183,6 @@ class Ajubot:
         response_code = update.callback_query["data"]  # eta_later, eta_never, eta_20:45, etc.
         log.info(f"Offer @{update.effective_chat.id} @{response_code}")
 
-        # import pdb; pdb.set_trace()
         if response_code == "eta_never":
             # the user pressed the button to say they're cancelling their offer
             self.send_message(chat_id, c.MSG_THANKS_NOTHANKS)
@@ -291,13 +283,10 @@ class Ajubot:
 
             # update this user's state and keep the request_id as well, so we can use it later
             updated_state = {'state': c.State.REQUEST_SENT, 'reviewed_request': request_id}
-            self.updater.persistence.update_user_data(chat_id, updated_state)
+            self.updater.dispatcher.user_data[chat_id].update(updated_state)
 
-        log.info('Adding request to store JJJJJJ')
-        self.updater.persistence.update_bot_data({request_id: data})
-        log.info('JJJJJJ %s', self.updater.persistence.bot_data)
-        # self.updater.persistence.update_bot_data()
-        # self.updater.persistence.flush()  # just in case, to make sure all the data are persisted
+        self.updater.dispatcher.bot_data.update({request_id: data})
+        self.updater.dispatcher.update_persistence()
 
     @run_async
     def hook_cancel_assistance(self, raw_data):
@@ -315,9 +304,6 @@ class Ajubot:
         assignee_chat_id = data['volunteer']
         log.info("ASSIGN req:%s to vol:%s", request_id, assignee_chat_id)
 
-        # TODO investigate why the persistence layer doesn't contain the data we need
-        log.info('JJJJJJ %s', self.updater.persistence.bot_data)
-        # import pdb; pdb.set_trace()
         try:
             request_details = self.updater.persistence.bot_data[request_id]
         except KeyError as err:
@@ -332,7 +318,8 @@ class Ajubot:
             if chat_id != assignee_chat_id:
                 self.send_message(chat_id, c.MSG_ANOTHER_ASSIGNEE)
                 updated_state = {'state': c.State.AVAILABLE, 'reviewed_request': None}
-                self.updater.persistence.update_user_data(chat_id, updated_state)
+                self.updater.dispatcher.user_data[chat_id].update(updated_state)
+        self.updater.dispatcher.update_persistence()
 
         # notify the assigned volunteer, so they know they're responsible; at this point they still have to confirm
         # that they're in good health and they still have an option to cancel
@@ -373,8 +360,6 @@ if __name__ == "__main__":
     covid_backend = Backender(covid_backend_url, covid_backend_user, covid_backend_pass)
 
     # this will be used to keep some state-related info in a file that survives across bot restarts
-    # pickler = DictPersistence()
-    # NOTE: the pickled persistence layer doesn't seem to propagate changes instantly, TODO find out why
     pickler = PicklePersistence("state.bin")
 
     updater = Updater(token=token, use_context=True, persistence=pickler)
