@@ -90,10 +90,11 @@ class Backender(object):
         :param offer: TODO the offer indicates when the volunteer will be able to reach the beneficiary"""
         log.debug("Relay offer for req:%s from vol:%s -> %s", request_id, volunteer_id, offer)
         payload = {
-            "_id": volunteer_id,
+            "telegram_chat_id": volunteer_id,
             "offer_beneficiary_id": request_id,
             "availability_day": offer,
         }
+        print(payload)
         self._put(payload=payload, url="volunteer")
 
     def update_request_status(self, request_id, status):
@@ -112,10 +113,11 @@ if __name__ == "__main__":
 
     # Here you can play around with the backend without involving any of the Telegram-related logic. Change these
     # credentials before running the demo
-    url = "http://127.0.0.1:5000/api/"
-    username = "testuser"
+    url = "http://web:5000/api/"
+    username = "changethis"
     password = "changethis"  # nosec
 
     b = Backender(url, username, password)
-    result = b.get_request_details("5e84c10a9938cfffc0217ed1")
+    result = b.get_request_details("5e88621080fcf9c2f4afbf3a")
+    b.relay_offer(request_id='5e88621080fcf9c2f4afbf3a', volunteer_id='414370900', offer='11:20')#is working, but from the tg bot is not
     log.info(result)
