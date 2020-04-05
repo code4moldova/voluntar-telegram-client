@@ -10,10 +10,9 @@ The easiest way to work on this client is to run `python backend_api.py`, adjust
 `if __name__ == "__main__"` - this way you can test it without touching any Telegram functionality whatsoever."""
 
 import logging
+import base64
 
 import requests
-
-import base64
 
 log = logging.getLogger("back")
 
