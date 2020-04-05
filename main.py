@@ -138,7 +138,6 @@ class Ajubot:
 
     def confirm_handle(self, update, context):
         """Invoked when the volunteer confirmed that they are on their way to the beneficiary"""
-        chat_id = update.effective_chat.id
         response_code = update.callback_query["data"]  # caution_ok or caution_cancel
         request_id = context.user_data["reviewed_request"]
         log.info("In progress req:%s %s", request_id, response_code)
@@ -305,7 +304,7 @@ class Ajubot:
 
         try:
             request_details = self.updater.persistence.bot_data[request_id]
-        except KeyError as err:
+        except KeyError:
             log.debug("No such request %s, ignoring", request_id)
             return
         else:
