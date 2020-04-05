@@ -89,7 +89,7 @@ class Backender(object):
         :param offer: TODO the offer indicates when the volunteer will be able to reach the beneficiary"""
         log.debug("Relay offer for req:%s from vol:%s -> %s", request_id, volunteer_id, offer)
         payload = {
-            "_id": volunteer_id,
+            "telegram_chat_id": volunteer_id,
             "offer_beneficiary_id": request_id,
             "availability_day": offer,
         }
