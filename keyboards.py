@@ -29,6 +29,20 @@ eta_first_responses = [
 ]
 
 
+# this keyboard is sent to them before dispatching the volunteer to a beneficiary, to make sure they are
+# healthy themselves
+caution_choices = [
+    [InlineKeyboardButton("Sunt sănătos și fără simptome", callback_data="caution_ok")],
+    [InlineKeyboardButton("Hmm... Mai bine anulez", callback_data="caution_cancel")],
+]
+
+# this keyboard is sent to them before dispatching the volunteer to a beneficiary, to keep track of their progress
+handling_choices = [
+    [InlineKeyboardButton("M-am pornit", callback_data="handle_onmyway")],
+    [InlineKeyboardButton("Anulează", callback_data="handle_cancel")],
+]
+
+
 def build_dynamic_keyboard_first_responses():
     """Build a dynamic keyboard that looks like `eta_first_responses`, but where the callback data contains
     timestamps that are N minutes in the future from now"""

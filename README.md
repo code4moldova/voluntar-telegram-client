@@ -51,7 +51,7 @@ The following endpoints are used for interaction between the backend and the Tel
     [done] backend->bot: notify bot about a new request for assistance
     [done] backend->bot: notify the specific volunteer that they are responsible for a request
     [done] backend->bot: notify the specific volunteer that a request assigned to them was cancelled}
-    - bot->backend: notify about offers from volunteers about a specific requestID
+    [done] bot->backend: notify about offers from volunteers about a specific requestID
     - bot->backend: volunteer is on their way
     - bot->backend: mission accomplished
     - bot->backend: send the receipt
@@ -60,7 +60,7 @@ The following endpoints are used for interaction between the backend and the Tel
     
 ## Payloads
 
-Payload sample `assistance_request`:
+Payload sample `assistance_request`, this is sent when a new request is added to the system by a fixer.
 
     {
         "request_id": "fe91e4b6-e902-4d03-8500-d058673cb9bd",
@@ -71,8 +71,16 @@ Payload sample `assistance_request`:
         "safetyCode": "Izvor-45",
         "phoneNumber": "+373 777 77 777",
         "remarks": ["Nu lucreaza ascensorul", "Are caine rau"],
-        "volunteers": ["chat_id1", "chat_id2", "chat_idN"]
+        "volunteers": [chat_id1, chat_id2, chat_idN]
       }
+
+Payload sample `assign_assistance`, this is sent when the system decided which volunteer to dispatch to a beneficiary.
+
+    {
+        "request_id": "fe91e4b6-e902-4d03-8500-d058673cb9bd",
+        "volunteer": chat_id,
+        "time": "20:45"
+    }
 
 
 
