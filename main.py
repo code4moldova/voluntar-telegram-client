@@ -9,7 +9,7 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     CallbackQueryHandler,
-    PicklePersistence
+    PicklePersistence,
 )
 from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, ParseMode
 from telegram.ext.dispatcher import run_async
@@ -152,29 +152,28 @@ class Ajubot:
 
         request_details = context.bot_data[request_id]
 
-        if 'ok' in response_code:
+        if "ok" in response_code:
             # They're in good health, let's go
             message = c.MSG_FULL_DETAILS % request_details
 
-            if 'remarks' in request_details:
-                message += '\n' + c.MSG_OTHER_REMARKS
-                for remark in request_details['remarks']:
-                    message += '- %s\n' % remark
+            if "remarks" in request_details:
+                message += "\n" + c.MSG_OTHER_REMARKS
+                for remark in request_details["remarks"]:
+                    message += "- %s\n" % remark
 
-            message += '\n' + c.MSG_LET_ME_KNOW
+            message += "\n" + c.MSG_LET_ME_KNOW
             self.updater.bot.send_message(
                 chat_id=chat_id,
                 text=message,
                 parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup(k.handling_choices)
+                reply_markup=InlineKeyboardMarkup(k.handling_choices),
             )
         else:  # caution_cancel
             # eventually they chose not to handle this request
             # TODO ask them why, maybe they're sick and they need help?
             self.send_message(chat_id, c.MSG_NO_WORRIES_LATER)
             context.user_data["reviewed_request"] = None
-            self.backend.update_request_status(request_id, 'CANCELLED')
-
+            self.backend.update_request_status(request_id, "CANCELLED")
 
     def negotiate_time(self, update, context):
         """This is invoked when the user chooses one of the responses to an assistance request; it can be an ETA or
@@ -282,7 +281,7 @@ class Ajubot:
             )
 
             # update this user's state and keep the request_id as well, so we can use it later
-            updated_state = {'state': c.State.REQUEST_SENT, 'reviewed_request': request_id}
+            updated_state = {"state": c.State.REQUEST_SENT, "reviewed_request": request_id}
             self.updater.dispatcher.user_data[chat_id].update(updated_state)
 
         self.updater.dispatcher.bot_data.update({request_id: data})
@@ -300,24 +299,23 @@ class Ajubot:
         """This will be invoked by the REST API when a new request for
         assistance was ASSIGNED to a specific volunteer.
         :param data: dict, see `assign_assistance` in the readme"""
-        request_id = data['request_id']
-        assignee_chat_id = data['volunteer']
+        request_id = data["request_id"]
+        assignee_chat_id = data["volunteer"]
         log.info("ASSIGN req:%s to vol:%s", request_id, assignee_chat_id)
 
         try:
             request_details = self.updater.persistence.bot_data[request_id]
         except KeyError as err:
-            log.debug('No such request %s, ignoring', request_id)
+            log.debug("No such request %s, ignoring", request_id)
             return
         else:
-            request_details['time'] = data['time']
-
+            request_details["time"] = data["time"]
 
         # first of all, notify the others that they are off the hook and update their state accordingly
-        for chat_id in request_details['volunteers']:
+        for chat_id in request_details["volunteers"]:
             if chat_id != assignee_chat_id:
                 self.send_message(chat_id, c.MSG_ANOTHER_ASSIGNEE)
-                updated_state = {'state': c.State.AVAILABLE, 'reviewed_request': None}
+                updated_state = {"state": c.State.AVAILABLE, "reviewed_request": None}
                 self.updater.dispatcher.user_data[chat_id].update(updated_state)
         self.updater.dispatcher.update_persistence()
 
@@ -326,7 +324,7 @@ class Ajubot:
         self.updater.bot.send_message(
             chat_id=assignee_chat_id,
             text=c.MSG_CAUTION,
-            reply_markup=InlineKeyboardMarkup(k.caution_choices)
+            reply_markup=InlineKeyboardMarkup(k.caution_choices),
         )
 
     @run_async
