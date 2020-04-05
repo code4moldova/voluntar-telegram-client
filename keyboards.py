@@ -43,8 +43,6 @@ handling_choices = [
 ]
 
 
-
-
 def build_dynamic_keyboard_first_responses():
     """Build a dynamic keyboard that looks like `eta_first_responses`, but where the callback data contains
     timestamps that are N minutes in the future from now"""
