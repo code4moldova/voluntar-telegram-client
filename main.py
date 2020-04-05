@@ -290,11 +290,11 @@ class Ajubot:
             )
 
             # update this user's state and keep the request_id as well, so we can use it later
-            self.updater.persistence.user_data[chat_id]["state"] = c.State.REQUEST_SENT
-            self.updater.persistence.user_data[chat_id]["reviewed_request"] = request_id
+            updated_state = {'state': c.State.REQUEST_SENT, 'reviewed_request': request_id}
+            self.updater.persistence.update_user_data(chat_id, updated_state)
 
         log.info('Adding request to store JJJJJJ')
-        self.updater.persistence.bot_data[request_id] = data
+        self.updater.persistence.update_bot_data({request_id: data})
         log.info('JJJJJJ %s', self.updater.persistence.bot_data)
         # self.updater.persistence.update_bot_data()
         # self.updater.persistence.flush()  # just in case, to make sure all the data are persisted
@@ -331,8 +331,8 @@ class Ajubot:
         for chat_id in request_details['volunteers']:
             if chat_id != assignee_chat_id:
                 self.send_message(chat_id, c.MSG_ANOTHER_ASSIGNEE)
-                self.updater.persistence.user_data[chat_id]["reviewed_request"] = None
-                self.updater.persistence.user_data[chat_id]["status"] = c.State.AVAILABLE
+                updated_state = {'state': c.State.AVAILABLE, 'reviewed_request': None}
+                self.updater.persistence.update_user_data(chat_id, updated_state)
 
         # notify the assigned volunteer, so they know they're responsible; at this point they still have to confirm
         # that they're in good health and they still have an option to cancel
