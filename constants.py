@@ -8,6 +8,7 @@ MSG_HELP = "Încearcă comanda /vreausaajut"
 MSG_ABOUT = f"Ajubot v{VERSION}, {URL}"
 MSG_STANDBY = "Mulțumesc! Te vom alerta când apar cereri noi."
 MSG_THANKS_NOTHANKS = "Bine, te vom alerta când apar cereri noi."
+MSG_THANKS_FINAL = "Îți mulțumim mult pentru ajutor."
 MSG_ACK_TIME = "Bine, ora %s, "
 MSG_COORDINATING = "coordonez cu alți voluntari."
 MSG_PHONE_QUERY = "Te rog să ne transmiți numărul de telefon, pentru a finaliza înregistrarea."
@@ -41,6 +42,11 @@ MSG_SAFETY_INSTRUCTIONS = """Nu uita:
 - Lasă produsele la ușă
 - După bani - *spală mâinile 20s*"""
 
+MSG_SAFETY_REMINDER = """Când ajungi, întreabă-i despre:
+- Are cineva din familie tuse, febră, nas curgător, sau dureri de cap?
+- Au contactat cu cineva care s-a întors din străinătate în ultimele 14 zile?
+- Își măsoară regulat temperatura?"""
+
 MSG_REQUEST_ANNOUNCEMENT = "O persoană din *%s* are nevoie de:\n%s\nPoți ajuta?"
 
 MSG_THANKS_FEEDBACK = (
@@ -52,7 +58,17 @@ MSG_FEEDBACK_EXPENSES = (
 )
 MSG_FEEDBACK_RECEIPT = "Te rog, expediază-mi *factura cumpărăturilor* efectuate"
 MSG_FEEDBACK_RECEIPT_ABSENT = "Nu am factură"
-MSG_FEEDBACK_BENEFICIARY_HEALTH = "Cum apreciezi starea de spirit a persoanei *%s*?"
+MSG_FEEDBACK_BENEFICIARY_HEALTH = (
+    "Cum apreciezi starea de spirit a persoanei *%s*? (poți alege mai multe simptome)"
+)
+MSG_FEEDBACK_FURTHER_COMMENTS = (
+    "Ai careva remarci adiționale pentru noi sau pentru alți voluntari care vor ajuta *%s*?"
+)
+
+MSG_WOULD_YOU_DO_THIS_AGAIN = "Vrei să ai grijă de *%s* în continuare?"
+MSG_SYMPTOMS = "*%s* manifestă careva din simptomele COVID-19?"
+
+
 # Button labels
 BTN_GET_PHONE = "Trimite numărul de telefon"
 
@@ -68,3 +84,11 @@ class State(Enum):
     EXPECTING_AMOUNT = 7
     EXPECTING_RECEIPT = 8
     EXPECTING_EXIT_SURVEY = 9
+    EXPECTING_FURTHER_COMMENTS = 10
+
+
+SYMPTOMS = {
+    "symptom_fever": "Febră",
+    "symptom_cough": "Tuse",
+    "symptom_heavybreathing": "Respirație cu dificultăți",
+}

@@ -73,6 +73,52 @@ wellbeing_choices = [
 ]
 
 
+# shown when asking whether the beneficiary has any symptoms
+symptom_choices = [
+    [
+        InlineKeyboardButton("☐ Febră", callback_data="symptom_fever"),
+        InlineKeyboardButton("☐ Tuse", callback_data="symptom_cough"),
+        InlineKeyboardButton("☐ Respiră greu", callback_data="symptom_heavybreathing"),
+    ],
+    [InlineKeyboardButton("Nu are simptome", callback_data="symptom_none")],
+    [InlineKeyboardButton("Mai departe", callback_data="symptom_next")],
+]
+
+
+def toggle_checkmark(text):
+    """Toggle a checkmark in a beginning of a string, e.g. '☐ Febră'->'☑ Febră' and vice versa"""
+    if "☑" in text:
+        return text.replace("☑", "☐")
+
+    return text.replace("☐", "☑")
+
+
+def update_dynamic_keyboard_symptom(keyboard, symptom):
+    """Generate a new keyboard to provide a smooth user experience when ticking and unticking checkboxes, it
+    is used for collecting a list of symptoms"""
+    # UGLY and hardcoded but it is not essential at the moment
+    if symptom == "symptom_fever":
+        keyboard[0][0].text = toggle_checkmark(keyboard[0][0].text)
+    elif symptom == "symptom_cough":
+        keyboard[0][1].text = toggle_checkmark(keyboard[0][1].text)
+    elif symptom == "symptom_heavybreathing":
+        keyboard[0][2].text = toggle_checkmark(keyboard[0][2].text)
+
+    return keyboard
+
+
+# shown when asking whether the beneficiary has any symptoms
+would_you_do_it_again_choices = [
+    [InlineKeyboardButton("Da", callback_data="wouldyou_yes")],
+    [InlineKeyboardButton("Nu", callback_data="wouldyou_no")],
+]
+
+# shown when asking whether the volunteer has further comments about the beneficiary
+further_comments_choices = [
+    [InlineKeyboardButton("Nu am comentarii", callback_data="furthercomments_no")],
+]
+
+
 def build_dynamic_keyboard_first_responses():
     """Build a dynamic keyboard that looks like `eta_first_responses`, but where the callback data contains
     timestamps that are N minutes in the future from now"""
@@ -133,5 +179,7 @@ def build_dynamic_keyboard(time_from=None):
 
 
 if __name__ == "__main__":
-    print(build_dynamic_keyboard())
-    print(build_dynamic_keyboard_first_responses())
+    # print(build_dynamic_keyboard())
+    # print(build_dynamic_keyboard_first_responses())
+
+    print(update_dynamic_keyboard_symptom(symptom_choices, "symptom_fever"))
