@@ -58,15 +58,15 @@ MSG_FEEDBACK_EXPENSES = (
 )
 MSG_FEEDBACK_RECEIPT = "Te rog, expediază-mi *factura cumpărăturilor* efectuate"
 MSG_FEEDBACK_RECEIPT_ABSENT = "Nu am factură"
-MSG_FEEDBACK_BENEFICIARY_HEALTH = (
-    "Cum apreciezi starea de spirit a persoanei *%s*? (poți alege mai multe simptome)"
+MSG_FEEDBACK_BENEFICIARY_MOOD = (
+    "Cum apreciezi dispoziția persoanei *%s*?"
 )
 MSG_FEEDBACK_FURTHER_COMMENTS = (
     "Ai careva remarci adiționale pentru noi sau pentru alți voluntari care vor ajuta *%s*?"
 )
 
 MSG_WOULD_YOU_DO_THIS_AGAIN = "Vrei să ai grijă de *%s* în continuare?"
-MSG_SYMPTOMS = "*%s* manifestă careva din simptomele COVID-19?"
+MSG_SYMPTOMS = "*%s* manifestă careva din simptomele COVID-19? (poți alege câteva)"
 
 
 # Button labels

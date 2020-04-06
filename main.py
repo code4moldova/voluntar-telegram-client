@@ -449,7 +449,7 @@ class Ajubot:
 
         self.updater.bot.send_message(
             chat_id=chat_id,
-            text=c.MSG_FEEDBACK_BENEFICIARY_HEALTH % context.bot_data[request_id]["beneficiary"],
+            text=c.MSG_FEEDBACK_BENEFICIARY_MOOD % context.bot_data[request_id]["beneficiary"],
             parse_mode=ParseMode.MARKDOWN,
             reply_markup=InlineKeyboardMarkup(k.wellbeing_choices, one_time_keyboard=True),
         )
