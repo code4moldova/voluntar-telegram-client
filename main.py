@@ -231,7 +231,7 @@ class Ajubot:
         # request_payload = context.bot_data[request_id]
         request_payload = {
             "request_id": request_id,
-            "amount": context.bot_data[request_id]["amount"],
+            "amount": context.bot_data[request_id].get("amount", 0),
             "further_comments": context.bot_data[request_id].get("further_comments", ""),
             "symptoms": context.bot_data[request_id].get("symptoms", []),
             "wellbeing": context.bot_data[request_id]["wellbeing"],
