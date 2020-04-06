@@ -455,8 +455,9 @@ class Ajubot:
                 f.write(raw_image)
                 log.debug("Image written to %s", f.name)
 
-            # TODO re-enable this in production
-            # self.backend.upload_shopping_receipt(raw_image, context.user_data["current_request"])
+            # Note: you can disable this line when testing locally, if you don't have an actual backend that will
+            # serve this request
+            self.backend.upload_shopping_receipt(raw_image, context.user_data["current_request"])
 
         # if we got this far it means that we're ready to proceed to the exit survey and ask some additional questions
         # about this request
