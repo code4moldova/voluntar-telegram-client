@@ -119,10 +119,39 @@ class Ajubot:
         dispatcher.add_handler(CallbackQueryHandler(self.negotiate_time, pattern="^eta.*"))
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_dispatch, pattern="^caution.*"))
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_handle, pattern="^handle.*"))
+        dispatcher.add_handler(CallbackQueryHandler(self.confirm_wellbeing, pattern="^state.*"))
 
         dispatcher.add_handler(MessageHandler(Filters.photo, self.on_photo))
         dispatcher.add_handler(MessageHandler(Filters.contact, self.on_contact))
+        dispatcher.add_handler(MessageHandler(Filters.text, self.on_text_message))
         dispatcher.add_error_handler(self.on_bot_error)
+
+    def confirm_wellbeing(self, update, context):
+        """This is invoked when the responded to the "are you sure you are healthy?" message"""
+        chat_id = update.effective_chat.id
+        response_code = update.callback_query["data"]  # state_{0..4}
+        request_id = context.user_data["reviewed_request"]
+        log.info("Wellbeing req:%s %s", request_id, response_code)
+        # TODO inform the server about it or update some local state with this info
+
+    def on_text_message(self, update, context):
+        """Invoked when the user sends an arbitrary text to the bot. We expect this to happen when they
+        - send the receipt and indicate the amount
+        - provide some feedback about the beneficiary"""
+        chat_id = update.effective_chat.id
+        log.info("Msg from:%s `%s`", chat_id, update.effective_message.text)
+
+        if context.user_data["state"] == c.State.EXPECTING_AMOUNT:
+            log.info("Vol:%s spent %s MDL on this request", chat_id, update.effective_message.text)
+            # TODO validate the message and make sure it is a number
+            # TODO send this to the server, we need to define an API for that
+            # Then we have to ask them to send a receipt.
+            self.send_message_ex(update.message.chat_id, c.MSG_FEEDBACK_RECEIPT)
+            context.user_data["state"] = c.State.EXPECTING_RECEIPT
+            return
+
+        # if we got this far it means it is some sort of an arbitrary message that we weren't yet expecting
+        log.warning("unexpected message ..........")
 
     def on_reject(self, update, _context):
         """Invoked when the user presses `No` after receiving a request for help"""
@@ -137,10 +166,32 @@ class Ajubot:
         )
 
     def confirm_handle(self, update, context):
-        """Invoked when the volunteer confirmed that they are on their way to the beneficiary"""
+        """Invoked when the volunteer confirmed that they are on their way to the beneficiary or while the request
+        is in progress"""
+        chat_id = update.effective_chat.id
         response_code = update.callback_query["data"]  # caution_ok or caution_cancel
         request_id = context.user_data["reviewed_request"]
         log.info("In progress req:%s %s", request_id, response_code)
+
+        if "handle_onmyway" == response_code:
+            # they pressed "I am 'on my way' in the GUI"
+            self.updater.bot.send_message(
+                chat_id=chat_id,
+                text=f"{c.MSG_SAFETY_INSTRUCTIONS} \n\n {c.MSG_LET_ME_KNOW_ARRIVE}",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(k.inprogress_choices),
+            )
+
+        elif "handle_done" == response_code:
+            # they pressed 'Mission accomplished' in the GUI
+            self.send_message_ex(chat_id, c.MSG_THANKS_FEEDBACK)
+            self.updater.bot.send_message(
+                chat_id=chat_id,
+                text=c.MSG_FEEDBACK_EXPENSES,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(k.endgame_choices),
+            )
+            context.user_data["state"] = c.State.EXPECTING_AMOUNT
 
     def confirm_dispatch(self, update, context):
         """This is invoked when the responded to the "are you sure you are healthy?" message"""
@@ -151,7 +202,7 @@ class Ajubot:
 
         request_details = context.bot_data[request_id]
 
-        if "ok" in response_code:
+        if "caution_ok" == response_code:
             # They're in good health, let's go
             message = c.MSG_FULL_DETAILS % request_details
 
@@ -235,16 +286,38 @@ class Ajubot:
             f"PHOTO from {user.username}, {user.full_name}, @{update.effective_chat.id}, #{photo_count}"
         )
 
+        if context.user_data["state"] != c.State.EXPECTING_RECEIPT:
+            # Got an image from someone we weren't expecting to send any. We log this, and TODO decide what
+            log.debug("Got image when I was not expecting one")
+            return
+
         # Process each photo
         for entry in update.message.photo:
             raw_image = entry.get_file().download_as_bytearray()
 
             # At this point the image is in the memory
-            with NamedTemporaryFile(delete=False, prefix=update.effective_chat.id) as f:
+            with NamedTemporaryFile(delete=False, prefix=str(update.effective_chat.id)) as f:
                 f.write(raw_image)
                 log.debug("Image written to %s", f.name)
 
-            self.backend.upload_shopping_receipt(raw_image, context.user_data["current_request"])
+            # TODO re-enable this in production
+            # self.backend.upload_shopping_receipt(raw_image, context.user_data["current_request"])
+
+        # if we got this far it means that we're ready to proceed to the exit survey and ask some additional questions
+        # about this request
+        self.send_exit_survey(update, context)
+        context.user_data["state"] = c.State.EXPECTING_EXIT_SURVEY
+
+    def send_exit_survey(self, update, context):
+        chat_id = update.effective_chat.id
+        request_id = context.user_data["current_request"]
+
+        self.updater.bot.send_message(
+            chat_id=chat_id,
+            text=c.MSG_FEEDBACK_BENEFICIARY_HEALTH % context.bot_data[request_id]["beneficiary"],
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=InlineKeyboardMarkup(k.wellbeing_choices, one_time_keyboard=True),
+        )
 
     @run_async
     def hook_request_assistance(self, data):
@@ -308,7 +381,7 @@ class Ajubot:
             log.debug("No such request %s, ignoring", request_id)
             return
         else:
-            request_details["time"] = data["time"]
+            self.updater.dispatcher.bot_data[request_id].update({"time": data["time"]})
 
         # first of all, notify the others that they are off the hook and update their state accordingly
         for chat_id in request_details["volunteers"]:
@@ -316,6 +389,8 @@ class Ajubot:
                 self.send_message(chat_id, c.MSG_ANOTHER_ASSIGNEE)
                 updated_state = {"state": c.State.AVAILABLE, "reviewed_request": None}
                 self.updater.dispatcher.user_data[chat_id].update(updated_state)
+
+        self.updater.dispatcher.user_data[assignee_chat_id].update({"current_request": request_id})
         self.updater.dispatcher.update_persistence()
 
         # notify the assigned volunteer, so they know they're responsible; at this point they still have to confirm
@@ -328,11 +403,21 @@ class Ajubot:
 
     @run_async
     def send_message(self, chat_id, text):
-        """Send a message to a specific chat session
+        """Send a message to a specific chat session. Note that this is an async sender, these messages may arrive
+        slightly out of order
         :param chat_id: int, chat identifier
         :param text: str, the text to be sent to the user"""
         self.updater.bot.sendMessage(chat_id=chat_id, text=text)
         log.info("Send msg @%s: %s..", chat_id, text[:20])
+
+    def send_message_ex(self, chat_id, text, parse_mode=ParseMode.MARKDOWN):
+        """Send a message to a specific chat session, in Markdown by default. This is a synchronous sender, it will
+        send it right away.
+        :param chat_id: int, chat identifier
+        :param text: str, the text to be sent to the user
+        :param parse_mode: e.g. ParseMode.MARKDOWN"""
+        self.updater.bot.sendMessage(chat_id=chat_id, text=text, parse_mode=parse_mode)
+        log.info("SendEx msg @%s: %s..", chat_id, text[:20])
 
 
 if __name__ == "__main__":

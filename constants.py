@@ -13,6 +13,7 @@ MSG_COORDINATING = "coordonez cu alți voluntari."
 MSG_PHONE_QUERY = "Te rog să ne transmiți numărul de telefon, pentru a finaliza înregistrarea."
 MSG_ANOTHER_ASSIGNEE = "Altcineva merge acolo. Te anunțăm când apar noi cereri"
 MSG_LET_ME_KNOW = "Anunță-mă când te-ai pornit"
+MSG_LET_ME_KNOW_ARRIVE = "Anunță-mă când e gata"
 MSG_OTHER_REMARKS = "*Remarci* de la alți voluntari:\n"
 MSG_NO_WORRIES_LATER = "Bine, nu te îngrijora, vor apărea și alte cereri în viitor"
 
@@ -42,6 +43,16 @@ MSG_SAFETY_INSTRUCTIONS = """Nu uita:
 
 MSG_REQUEST_ANNOUNCEMENT = "O persoană din *%s* are nevoie de:\n%s\nPoți ajuta?"
 
+MSG_THANKS_FEEDBACK = (
+    "Îți mulțumesc pentru ajutor. Te rog să-mi spui câte ceva despre această experiență:"
+)
+
+MSG_FEEDBACK_EXPENSES = (
+    "Ai suportat careva cheltuieli? Dacă da, introdu suma în lei (e.g., 45 sau 45.82)"
+)
+MSG_FEEDBACK_RECEIPT = "Te rog, expediază-mi *factura cumpărăturilor* efectuate"
+MSG_FEEDBACK_RECEIPT_ABSENT = "Nu am factură"
+MSG_FEEDBACK_BENEFICIARY_HEALTH = "Cum apreciezi starea de spirit a persoanei *%s*?"
 # Button labels
 BTN_GET_PHONE = "Trimite numărul de telefon"
 
@@ -54,3 +65,6 @@ class State(Enum):
     REQUEST_ASSIGNED = 4
     REQUEST_IN_PROGRESS = 5
     REQUEST_COMPLETED = 6
+    EXPECTING_AMOUNT = 7
+    EXPECTING_RECEIPT = 8
+    EXPECTING_EXIT_SURVEY = 9

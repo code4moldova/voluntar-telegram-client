@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
 from telegram import KeyboardButton, InlineKeyboardButton
@@ -40,6 +41,35 @@ caution_choices = [
 handling_choices = [
     [InlineKeyboardButton("M-am pornit", callback_data="handle_onmyway")],
     [InlineKeyboardButton("Anulează", callback_data="handle_cancel")],
+]
+
+inprogress_choices = [
+    [InlineKeyboardButton("Misiune îndeplinită", callback_data="handle_done")],
+    [InlineKeyboardButton("Anulează", callback_data="handle_cancel")],
+]
+
+# shown when they pressed "mission accomplished"
+endgame_choices = [
+    [
+        InlineKeyboardButton(
+            "Nu am avut cheltuieli sau mi s-au întors banii", callback_data="handle_no_expenses"
+        )
+    ],
+]
+
+# shown when the user is inquired about the beneficiary's wellbeing
+wellbeing_choices = [
+    [
+        InlineKeyboardButton(
+            "🥵 Foarte rea", callback_data="state_0"
+        ),  # there's an invisible emoji in the beginning
+        InlineKeyboardButton("😟 Rea", callback_data="state_1"),
+    ],
+    [InlineKeyboardButton("😐 Neutră", callback_data="state_2")],
+    [
+        InlineKeyboardButton("😃 Bună", callback_data="state_3"),
+        InlineKeyboardButton("😁 Foarte bună", callback_data="state_4"),
+    ],
 ]
 
 
