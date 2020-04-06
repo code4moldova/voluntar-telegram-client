@@ -161,21 +161,31 @@ def get_etas_today(time_from=None):
     return times
 
 
+def chunkify(lst, n=4):
+    """Yield successive n-sized chunks from lst. Taken from https://stackoverflow.com/a/312464/27342"""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
 def build_dynamic_keyboard(time_from=None):
     """Construct a keyboard with various time options to choose from
     :param time_from: optional datetime, by default it is now
-    :returns: Telegram keyboard that looks like this:
+    :returns: Telegram keyboard that has 4 time options per row, it looks like this:
     keyboard = [
-        [InlineKeyboardButton("15:32", callback_data="eta_15:32")],
-        [InlineKeyboardButton("16:02", callback_data="eta_16:02")],
-        [InlineKeyboardButton("16:32", callback_data="eta_16:32")],
+        [InlineKeyboardButton("15:32", callback_data="eta_15:32"),
+        InlineKeyboardButton("16:02", callback_data="eta_16:02"),
+        InlineKeyboardButton("16:32", callback_data="eta_16:32")],
+        ...
     ]
     """
     times = [item.strftime("%H:%M") for item in get_etas_today(time_from)]
+    chunkified_times = chunkify(times)
 
     keyboard = []
-    for entry in times:
-        keyboard.append([InlineKeyboardButton(entry, callback_data="eta_" + entry)])
+    for entry in chunkified_times:
+        row = []
+        for sub_entry in entry:
+            row.append(InlineKeyboardButton(sub_entry, callback_data="eta_" + sub_entry))
+        keyboard.append(row)
     return keyboard
 
 
