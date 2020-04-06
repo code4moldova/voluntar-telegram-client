@@ -251,7 +251,7 @@ class Ajubot:
     def send_thanks_image(self, chat_id):
         """Send a random thank you GIF from our local collection, as an added bonus"""
         gifs = os.listdir(os.path.join('res', 'gifs'))
-        specific_gif = os.listdir(os.path.join('res', 'gifs', choice(gifs)))
+        specific_gif = os.path.join('res', 'gifs', choice(gifs))
         random_gif = open(specific_gif, "rb")
         self.updater.bot.send_animation(chat_id, random_gif, disable_notification=True)
 
