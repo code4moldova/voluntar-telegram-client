@@ -80,7 +80,7 @@ symptom_choices = [
         InlineKeyboardButton("☐ Tuse", callback_data="symptom_cough"),
         InlineKeyboardButton("☐ Respiră greu", callback_data="symptom_heavybreathing"),
     ],
-    [InlineKeyboardButton("Nu are simptome", callback_data="symptom_none")],
+    [InlineKeyboardButton("👍 Nu are simptome", callback_data="symptom_none")],
     [InlineKeyboardButton("Mai departe", callback_data="symptom_next")],
 ]
 
