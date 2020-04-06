@@ -326,6 +326,19 @@ class Ajubot:
             )
             context.user_data["state"] = c.State.EXPECTING_AMOUNT
 
+        elif "handle_no_expenses" == response_code:
+            # they indicated no compensation is required; proceed to the exit survey and ask some additional questions
+            # about this request
+            self.send_exit_survey(update, context)
+            context.user_data["state"] = c.State.EXPECTING_EXIT_SURVEY
+
+        elif "handle_cancel" == response_code:
+            # they bailed out at some point while the request was in progress
+            self.send_message(chat_id, c.MSG_NO_WORRIES_LATER)
+            context.user_data["reviewed_request"] = None
+            context.user_data["state"] = c.State.AVAILABLE
+            self.backend.update_request_status(request_id, "CANCELLED")
+
     def confirm_dispatch(self, update, context):
         """This is invoked when the responded to the "are you sure you are healthy?" message"""
         chat_id = update.effective_chat.id
@@ -377,6 +390,7 @@ class Ajubot:
             # the user pressed the button to say they're cancelling their offer
             self.send_message(chat_id, c.MSG_THANKS_NOTHANKS)
             context.user_data["reviewed_request"] = None
+            context.user_data["state"] = c.State.AVAILABLE
 
         elif response_code == "eta_later":
             # Show them more options in the interactive menu
