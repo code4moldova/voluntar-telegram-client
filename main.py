@@ -250,8 +250,8 @@ class Ajubot:
 
     def send_thanks_image(self, chat_id):
         """Send a random thank you GIF from our local collection, as an added bonus"""
-        gifs = os.listdir(os.path.join('res', 'gifs'))
-        specific_gif = os.path.join('res', 'gifs', choice(gifs))
+        gifs = os.listdir(os.path.join("res", "gifs"))
+        specific_gif = os.path.join("res", "gifs", choice(gifs))
         random_gif = open(specific_gif, "rb")
         self.updater.bot.send_animation(chat_id, random_gif, disable_notification=True)
 
@@ -352,9 +352,10 @@ class Ajubot:
             # They're in good health, let's go
 
             # send a location message, if this info is available in the request
-            if 'latitude' in request_details:
-                self.updater.bot.send_location(chat_id, request_details['latitude'], request_details['longitude'])
-
+            if "latitude" in request_details:
+                self.updater.bot.send_location(
+                    chat_id, request_details["latitude"], request_details["longitude"]
+                )
 
             # then send the rest of the details as text
             message = c.MSG_FULL_DETAILS % request_details

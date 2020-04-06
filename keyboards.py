@@ -164,7 +164,10 @@ def get_etas_today(time_from=None):
 def chunkify(lst, n=4):
     """Yield successive n-sized chunks from lst. Taken from https://stackoverflow.com/a/312464/27342"""
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[
+            i : i + n  # noqa: E203  # black makes it ugly, conflicts with flake8, you can't make 'em both happy
+        ]
+
 
 def build_dynamic_keyboard(time_from=None):
     """Construct a keyboard with various time options to choose from
