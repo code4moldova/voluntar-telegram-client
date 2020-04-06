@@ -131,7 +131,6 @@ class Ajubot:
 
     def confirm_further(self, update, context):
         """This is invoked when they clicked "No further comments" in the end"""
-        chat_id = update.effective_chat.id
         response_code = update.callback_query["data"]  # wouldyou_{yes|no}
         request_id = context.user_data["current_request"]
         log.info("No further comments req:%s %s", request_id, response_code)
@@ -237,7 +236,8 @@ class Ajubot:
             "wellbeing": context.bot_data[request_id]["wellbeing"],
             "would_return": context.bot_data[request_id]["would_return"],
         }
-        # TODO add new API for providing this info to the server
+
+        self.backend.send_request_result(request_id, request_payload)
 
         # reset the user state so they're clean and ready for new assignments
         context.user_data["state"] = c.State.AVAILABLE
