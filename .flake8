@@ -6,5 +6,6 @@
 # W503, W504 - new line before/after binary operator - we ignore it,
 # because black insists on having it this way; there's no way to
 # reconcile them.
-ignore = E501, W503, W504
+# E203 - for compatibility with black, see https://github.com/psf/black#slices
+ignore = E501, W503, W504, E203
 max-line-length = 100

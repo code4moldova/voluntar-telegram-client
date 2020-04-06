@@ -72,6 +72,8 @@ Payload sample `assistance_request`, this is sent when a new request is added to
         "phoneNumber": "+373 777 77 777",
         "remarks": ["Nu lucreaza ascensorul", "Are caine rau"],
         "volunteers": [chat_id1, chat_id2, chat_idN]
+        "latitude": 47.0255165,
+        "longitude": 28.8303149
       }
 
 Payload sample `assign_assistance`, this is sent when the system decided which volunteer to dispatch to a beneficiary.

@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+from random import choice
 from tempfile import NamedTemporaryFile
 
 from telegram.ext import (
@@ -166,7 +167,7 @@ class Ajubot:
         request_id = context.user_data["current_request"]
         log.info("Symptom req:%s %s", request_id, response_code)
 
-        if response_code in ["symptom_none", "symptom_next"]:
+        if response_code in ["symptom_none", "symptom_next", "symptom_noidea"]:
             # they pressed "Continue" or marked the end of all the symptoms list, move on to the next question
             self.updater.bot.send_message(
                 chat_id=chat_id,
@@ -216,7 +217,7 @@ class Ajubot:
 
         self.updater.bot.send_message(
             chat_id=chat_id,
-            text=c.MSG_FEEDBACK_BENEFICIARY_HEALTH % context.bot_data[request_id]["beneficiary"],
+            text=c.MSG_SYMPTOMS % context.bot_data[request_id]["beneficiary"],
             parse_mode=ParseMode.MARKDOWN,
             reply_markup=InlineKeyboardMarkup(k.symptom_choices, one_time_keyboard=True),
         )
@@ -230,7 +231,7 @@ class Ajubot:
         # request_payload = context.bot_data[request_id]
         request_payload = {
             "request_id": request_id,
-            "amount": context.bot_data[request_id]["amount"],
+            "amount": context.bot_data[request_id].get("amount", 0),
             "further_comments": context.bot_data[request_id].get("further_comments", ""),
             "symptoms": context.bot_data[request_id].get("symptoms", []),
             "wellbeing": context.bot_data[request_id]["wellbeing"],
@@ -249,7 +250,10 @@ class Ajubot:
 
     def send_thanks_image(self, chat_id):
         """Send a random thank you GIF from our local collection, as an added bonus"""
-        random_gif = open("res/gifs/cat1.gif", "rb")  # TODO choose one from res/gifs
+        gifs = os.listdir(os.path.join("res", "gifs"))
+        # Bandit complains this is not a proper randomizer, but this is OK for the given use case
+        specific_gif = os.path.join("res", "gifs", choice(gifs))  # nosec
+        random_gif = open(specific_gif, "rb")
         self.updater.bot.send_animation(chat_id, random_gif, disable_notification=True)
 
     def on_text_message(self, update, context):
@@ -323,6 +327,19 @@ class Ajubot:
             )
             context.user_data["state"] = c.State.EXPECTING_AMOUNT
 
+        elif "handle_no_expenses" == response_code:
+            # they indicated no compensation is required; proceed to the exit survey and ask some additional questions
+            # about this request
+            self.send_exit_survey(update, context)
+            context.user_data["state"] = c.State.EXPECTING_EXIT_SURVEY
+
+        elif "handle_cancel" == response_code:
+            # they bailed out at some point while the request was in progress
+            self.send_message(chat_id, c.MSG_NO_WORRIES_LATER)
+            context.user_data["reviewed_request"] = None
+            context.user_data["state"] = c.State.AVAILABLE
+            self.backend.update_request_status(request_id, "CANCELLED")
+
     def confirm_dispatch(self, update, context):
         """This is invoked when the responded to the "are you sure you are healthy?" message"""
         chat_id = update.effective_chat.id
@@ -334,6 +351,14 @@ class Ajubot:
 
         if "caution_ok" == response_code:
             # They're in good health, let's go
+
+            # send a location message, if this info is available in the request
+            if "latitude" in request_details:
+                self.updater.bot.send_location(
+                    chat_id, request_details["latitude"], request_details["longitude"]
+                )
+
+            # then send the rest of the details as text
             message = c.MSG_FULL_DETAILS % request_details
 
             if "remarks" in request_details:
@@ -348,11 +373,13 @@ class Ajubot:
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup(k.handling_choices),
             )
+
         else:  # caution_cancel
             # eventually they chose not to handle this request
             # TODO ask them why, maybe they're sick and they need help?
             self.send_message(chat_id, c.MSG_NO_WORRIES_LATER)
             context.user_data["reviewed_request"] = None
+            context.user_data["state"] = c.State.AVAILABLE
             self.backend.update_request_status(request_id, "CANCELLED")
 
     def negotiate_time(self, update, context):
@@ -366,6 +393,7 @@ class Ajubot:
             # the user pressed the button to say they're cancelling their offer
             self.send_message(chat_id, c.MSG_THANKS_NOTHANKS)
             context.user_data["reviewed_request"] = None
+            context.user_data["state"] = c.State.AVAILABLE
 
         elif response_code == "eta_later":
             # Show them more options in the interactive menu
@@ -430,8 +458,9 @@ class Ajubot:
                 f.write(raw_image)
                 log.debug("Image written to %s", f.name)
 
-            # TODO re-enable this in production
-            # self.backend.upload_shopping_receipt(raw_image, context.user_data["current_request"])
+            # Note: you can disable this line when testing locally, if you don't have an actual backend that will
+            # serve this request
+            self.backend.upload_shopping_receipt(raw_image, context.user_data["current_request"])
 
         # if we got this far it means that we're ready to proceed to the exit survey and ask some additional questions
         # about this request
@@ -444,7 +473,7 @@ class Ajubot:
 
         self.updater.bot.send_message(
             chat_id=chat_id,
-            text=c.MSG_FEEDBACK_BENEFICIARY_HEALTH % context.bot_data[request_id]["beneficiary"],
+            text=c.MSG_FEEDBACK_BENEFICIARY_MOOD % context.bot_data[request_id]["beneficiary"],
             parse_mode=ParseMode.MARKDOWN,
             reply_markup=InlineKeyboardMarkup(k.wellbeing_choices, one_time_keyboard=True),
         )
