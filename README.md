@@ -90,9 +90,13 @@ of entities throughout their lifecycle. The state is a dictionary.
 
 ### User related
 
-- `state` - `{EXPECTING_PHONE_NUMBER, ONBOARD_COMPLETE ...}`
+- `state` - `{EXPECTING_PHONE_NUMBER, ONBOARD_COMPLETE ...}`.
+- `reviewed_request` - a string with the ID of the request that the volunteer considers taking.
 - `current_request` - a string with the ID of the request that is currently handled by this user. Can be `None` if no
 request is currently handled.
+- `amount` - the amount paid in the context of a request (can be `None` if no expenses were incurred).
+- `wellbeing` - an interger between 0 (very bad) and 4 (very good), corresponding to the perceived state of the
+beneficiary's health (assessed by the volunteer), see `keyboards.py/wellbeing_choices` for details.
 
 
 
