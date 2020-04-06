@@ -166,7 +166,7 @@ class Ajubot:
         request_id = context.user_data["current_request"]
         log.info("Symptom req:%s %s", request_id, response_code)
 
-        if response_code in ["symptom_none", "symptom_next"]:
+        if response_code in ["symptom_none", "symptom_next", "symptom_noidea"]:
             # they pressed "Continue" or marked the end of all the symptoms list, move on to the next question
             self.updater.bot.send_message(
                 chat_id=chat_id,
