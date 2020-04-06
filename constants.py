@@ -1,6 +1,6 @@
 from enum import Enum
 
-VERSION = "0.1.0"  # follow SemVer conventions: https://semver.org/
+VERSION = "0.2.0"  # follow SemVer conventions: https://semver.org/
 URL = "code4md.com"
 
 # Messages used in various phases of interaction
