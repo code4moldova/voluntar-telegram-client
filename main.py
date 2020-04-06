@@ -348,6 +348,11 @@ class Ajubot:
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup(k.handling_choices),
             )
+
+            # send a location message as well, if this info is available in the request
+            if 'latitude' in request_details:
+                self.updater.bot.send_location(chat_id, request_details['latitude'], request_details['longitude'])
+
         else:  # caution_cancel
             # eventually they chose not to handle this request
             # TODO ask them why, maybe they're sick and they need help?
