@@ -337,6 +337,13 @@ class Ajubot:
 
         if "caution_ok" == response_code:
             # They're in good health, let's go
+
+            # send a location message, if this info is available in the request
+            if 'latitude' in request_details:
+                self.updater.bot.send_location(chat_id, request_details['latitude'], request_details['longitude'])
+
+
+            # then send the rest of the details as text
             message = c.MSG_FULL_DETAILS % request_details
 
             if "remarks" in request_details:
@@ -351,10 +358,6 @@ class Ajubot:
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup(k.handling_choices),
             )
-
-            # send a location message as well, if this info is available in the request
-            if 'latitude' in request_details:
-                self.updater.bot.send_location(chat_id, request_details['latitude'], request_details['longitude'])
 
         else:  # caution_cancel
             # eventually they chose not to handle this request
