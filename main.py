@@ -377,6 +377,7 @@ class Ajubot:
             # TODO ask them why, maybe they're sick and they need help?
             self.send_message(chat_id, c.MSG_NO_WORRIES_LATER)
             context.user_data["reviewed_request"] = None
+            context.user_data["state"] = c.State.AVAILABLE
             self.backend.update_request_status(request_id, "CANCELLED")
 
     def negotiate_time(self, update, context):
