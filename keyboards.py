@@ -19,6 +19,7 @@ initial_responses = [
     [KeyboardButton("/Nu")],
 ]
 
+# this one is not used at the moment
 eta_first_responses = [
     [
         InlineKeyboardButton("În 30min", callback_data="eta_30min"),
@@ -43,6 +44,7 @@ handling_choices = [
     [InlineKeyboardButton("Anulează", callback_data="handle_cancel")],
 ]
 
+# shown after the volunteer pressed "I'm on my way"
 inprogress_choices = [
     [InlineKeyboardButton("Misiune îndeplinită", callback_data="handle_done")],
     [InlineKeyboardButton("Anulează", callback_data="handle_cancel")],

@@ -63,7 +63,6 @@ class Ajubot:
     def on_bot_start(update, context):
         """Send a message when the command /start is issued."""
         user = update.effective_user
-        # TODO add this to some local storage, maybe sqlite?
         log.info(
             f"ADD {user.username}, {user.full_name}, @{update.effective_chat.id}, {user.language_code}"
         )
@@ -163,7 +162,7 @@ class Ajubot:
         context.user_data["state"] = c.State.EXPECTING_FURTHER_COMMENTS
 
     def confirm_symptom(self, update, context):
-        """This is invoked when TODO"""
+        """This is invoked when the user reported the observed symptoms, if any"""
         chat_id = update.effective_chat.id
         message_id = update.effective_message.message_id
         response_code = update.callback_query["data"]  # symptom_{fever|cough|heavybreathing}
@@ -209,7 +208,7 @@ class Ajubot:
                 context.bot_data[request_id]["symptoms"] = [response_code]
 
     def confirm_wellbeing(self, update, context):
-        """This is invoked when TODO"""
+        """This is invoked when the user esimated the wellbeing of the assisted beneficiary"""
         chat_id = update.effective_chat.id
         response_code = int(update.callback_query["data"].split("_")[-1])  # state_{0..4}
         request_id = context.user_data["current_request"]
@@ -268,7 +267,7 @@ class Ajubot:
 
         if context.user_data["state"] == c.State.EXPECTING_AMOUNT:
             log.info("Vol:%s spent %s MDL on this request", chat_id, update.effective_message.text)
-            # TODO validate the message and make sure it is a number
+            # TODO validate the message and make sure it is a number, discuss whether this is necessary at all
             # TODO send this to the server, we need to define an API for that
             request_id = context.user_data["current_request"]
 
@@ -379,7 +378,7 @@ class Ajubot:
 
         else:  # caution_cancel
             # eventually they chose not to handle this request
-            # TODO ask them why, maybe they're sick and they need help?
+            # TODO ask them why, maybe they're sick and they need help? Discuss whether this is relevant
             self.send_message(chat_id, c.MSG_NO_WORRIES_LATER)
             context.user_data["reviewed_request"] = None
             context.user_data["state"] = c.State.AVAILABLE
