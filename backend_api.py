@@ -86,7 +86,7 @@ class Backender(object):
         will be invoked multiple times for the same request, as soon as each volunteer will send their response.
         :param request_id: str, identifier of request
         :param volunteer_id: str, volunteer identifier
-        :param offer: TODO the offer indicates when the volunteer will be able to reach the beneficiary"""
+        :param offer: str, the offer indicates when the volunteer will be able to reach the beneficiary"""
         log.debug("Relay offer for req:%s from vol:%s -> %s", request_id, volunteer_id, offer)
         payload = {
             "telegram_chat_id": volunteer_id,
@@ -98,7 +98,7 @@ class Backender(object):
     def update_request_status(self, request_id, status):
         """Change the status of a request, e.g., when a volunteer is on their way, or when the request was fulfilled.
         :param request_id: str, identifier of request
-        :param status: TODO indicate what state it is in {new, assigned, in progress, done, something else...}"""
+        :param status: str, indicates what state it is in {new, onProgress, done, canceled}"""
         log.debug("Set req:%s to: `%s`", request_id, status)
         payload = {"_id": request_id, "status": status}
         self._put(payload=payload, url="beneficiary")
