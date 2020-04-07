@@ -32,7 +32,10 @@ class Ajubot:
         self.updater = updater
         self.backend = backend
         self.rest = restapi.BotRestApi(
-            self.hook_request_assistance, self.hook_cancel_assistance, self.hook_assign_assistance,
+            self.hook_request_assistance,
+            self.hook_cancel_assistance,
+            self.hook_assign_assistance,
+            self.hook_introspect,
         )
 
     def serve(self):
@@ -517,6 +520,13 @@ class Ajubot:
 
         self.updater.dispatcher.bot_data.update({request_id: data})
         self.updater.dispatcher.update_persistence()
+
+    def hook_introspect(self):
+        """Return a dictionary with the user_data and bot_data, to make introspection easier"""
+        # NOTE that this doesn't use @run_async, unlike other hooks, because it has to return right away
+        user_state = self.updater.persistence.user_data
+        bot_state = self.updater.persistence.bot_data
+        return {"volunteers": user_state, "requests": bot_state}
 
     @run_async
     def hook_cancel_assistance(self, raw_data):

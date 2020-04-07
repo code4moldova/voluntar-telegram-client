@@ -1,6 +1,7 @@
 import logging
 from threading import Thread
 import json
+import pprint
 
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
@@ -10,14 +11,17 @@ log = logging.getLogger("rest")
 
 
 class BotRestApi(object):
-    def __init__(self, help_request_handler, cancel_request_handler, assign_request_handler):
+    def __init__(self, help_handler, cancel_handler, assign_handler, introspect_handler):
         """Initialize the REST API
-        :param help_request_handler: callable, a function that will be invoked when a new request for assistance arrives
-        :param cancel_request_handler: callable, will be invoked when a request for assistance was cancelled
-        :param assign_request_handler: callable, will be invoked when a request for assistance was assigned to someone"""
-        self.help_request_handler = help_request_handler
-        self.cancel_request_handler = cancel_request_handler
-        self.assign_request_handler = assign_request_handler
+        :param help_handler: callable, a function that will be invoked when a new request for assistance arrives
+        :param cancel_handler: callable, will be invoked when a request for assistance was cancelled
+        :param assign_handler: callable, will be invoked when a request for assistance was assigned to someone
+        :param introspect_handler: callable, invoked when you go to the /introspect URL, it simply dumps the bot's state
+                                   so you can get a clue about the current situation"""
+        self.help_request_handler = help_handler
+        self.cancel_request_handler = cancel_handler
+        self.assign_request_handler = assign_handler
+        self.introspect_handler = introspect_handler
         self.form = open("res/static/index.html", "rb").read()
         self.url_map = Map(
             [
@@ -25,6 +29,7 @@ class BotRestApi(object):
                 Rule("/help_request", endpoint="help_request"),
                 Rule("/cancel_help_request", endpoint="cancel_help_request"),
                 Rule("/assign_help_request", endpoint="assign_help_request"),
+                Rule("/introspect", endpoint="introspect_request"),
             ]
         )
 
@@ -99,6 +104,14 @@ class BotRestApi(object):
             # and pass it the input parameters
             self.assign_request_handler(data)
             return Response("Request handled")
+
+    def on_introspect_request(self, request):
+        """Called when a developer wants to introspect the bot's state"""
+        # WARNING: this is not meant to be exposed to the world, and is only intended as a development aid, accessible
+        # via a localhost interface. It will leak sensitive information if exposed to the public.
+        if request.method == "GET":
+            result = self.introspect_handler()
+            return Response(pprint.pformat(result, indent=4))
 
 
 def run_background(app, interface="127.0.0.1", port=5000):

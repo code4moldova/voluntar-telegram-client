@@ -1,4 +1,4 @@
-# Telegram bot that connects volunteers to beneficiaries
+# Telegram bot that connects volunteers to beneficiaries who need assistance during the COVID-19 pandemic
 
 - See `doc/chat_interaction.svg` to get an idea of the workflow
 - Code derived from https://github.com/roataway/telegram-bot, it provides examples of stateful interactions
@@ -88,7 +88,9 @@ Payload sample `assign_assistance`, this is sent when the system decided which v
 
 ## Bot's state
 Some information is stored in a persistent context that survives bot restarts. This information is needed to keep track
-of entities throughout their lifecycle. The state is a dictionary.
+of entities throughout their lifecycle. The state is a dictionary, you can examine it via http://localhost:5001/introspect.
+It comes in handy during debugging, but keep in mind that this exposes details about beneficiaries, so this endpoint
+**must not** be accessible to the public (it is not, by default).
 
 ### User related
 
@@ -112,8 +114,9 @@ beneficiary's health (assessed by the volunteer), see `keyboards.py/wellbeing_ch
 `COVID_BACKEND_USER`, `COVID_BACKEND_PASS`
 5. Run `python main.py`
 
-Optionally, you can open http://localhost:5001 to send an example of a payload, simulating an actual request that came
+ptionally, you can open http://localhost:5001 to send an example of a payload, simulating an actual request that came
 from the backend.
+
 
 
 # How to contribute
