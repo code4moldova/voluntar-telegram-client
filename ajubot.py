@@ -252,6 +252,7 @@ class Ajubot:
         context.user_data["state"] = c.State.AVAILABLE
         context.user_data["current_request"] = None
         context.user_data["reviewed_request"] = None
+        del context.bot_data[request_id]
 
         # cherry on top
         self.send_thanks_image(update.effective_chat.id)
