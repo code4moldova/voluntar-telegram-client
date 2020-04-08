@@ -532,19 +532,20 @@ class Ajubot:
         """This will be invoked by the REST API when an assigned request for
         assistance was CANCELED from the backend.
         :param data: dict, see `cancel_help_request` in the readme"""
-        request_id = data['request_id']
+        request_id = data["request_id"]
         assignee_chat_id = data["volunteer"]
         log.info("CANCEL req:%s", request_id)
         self.send_message(assignee_chat_id, c.MSG_REQUEST_CANCELED)
 
-        self.updater.dispatcher.user_data[assignee_chat_id].update({"current_request": None, "reviewed_request": None, "state": c.State.AVAILABLE})
+        self.updater.dispatcher.user_data[assignee_chat_id].update(
+            {"current_request": None, "reviewed_request": None, "state": c.State.AVAILABLE}
+        )
         # TODO ideally the key should be removed, but the current API doesn't allow it, see:
         # https://github.com/python-telegram-bot/python-telegram-bot/issues/1869
         # At the moment there is no logic that might blow up by retrieving the value of this key and then naively
         # assuming that the data are there; but this might happen in the future, if one is not careful.
         self.updater.dispatcher.bot_data.update({request_id: None})
         self.updater.dispatcher.update_persistence()
-
 
     @run_async
     def hook_assign_assistance(self, data):
