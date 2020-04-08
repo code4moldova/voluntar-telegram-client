@@ -1,6 +1,6 @@
 from enum import Enum
 
-VERSION = "0.3.0"  # follow SemVer conventions: https://semver.org/
+VERSION = "0.4.0"  # follow SemVer conventions: https://semver.org/
 URL = "code4md.com"
 
 # Messages used in various phases of interaction
@@ -13,6 +13,7 @@ MSG_ACK_TIME = "Bine, ora %s, "
 MSG_COORDINATING = "coordonez cu alți voluntari."
 MSG_PHONE_QUERY = "Te rog să ne transmiți numărul de telefon, pentru a finaliza înregistrarea."
 MSG_ANOTHER_ASSIGNEE = "Altcineva merge acolo. Te anunțăm când apar noi cereri"
+MSG_REQUEST_CANCELED = "Cererea de ajutor a fost anulată."
 MSG_LET_ME_KNOW = "Anunță-mă când te-ai pornit"
 MSG_LET_ME_KNOW_ARRIVE = "Anunță-mă când e gata"
 MSG_OTHER_REMARKS = "*Remarci* de la alți voluntari:\n"
