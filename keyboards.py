@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Keyboards used by the bot, as well as functions that generate keyboards dynamically"""
+
 from datetime import datetime, timedelta
 
 from telegram import KeyboardButton, InlineKeyboardButton

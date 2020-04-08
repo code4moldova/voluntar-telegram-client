@@ -14,10 +14,12 @@ import base64
 
 import requests
 
-log = logging.getLogger("back")
+log = logging.getLogger("back")  # pylint: disable=invalid-name
 
 
-class Backender(object):
+class Backender:
+    """This is a client that talks to the backend, transmitting information from the Telegram bot"""
+
     def __init__(self, url, username, password):
         """Initialize the backend REST API client"""
         self.base_url = url

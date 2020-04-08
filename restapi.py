@@ -1,3 +1,5 @@
+"""This is a mini web server that the bot uses to receive input from the backend, by means of REST calls"""
+
 import logging
 from threading import Thread
 import json
@@ -7,10 +9,12 @@ from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.exceptions import BadRequest, MethodNotAllowed, HTTPException
 
-log = logging.getLogger("rest")
+log = logging.getLogger("rest")  # pylint: disable=invalid-name
 
 
-class BotRestApi(object):
+class BotRestApi:
+    """The REST API that receives events and data from the backend"""
+
     def __init__(self, help_handler, cancel_handler, assign_handler, introspect_handler):
         """Initialize the REST API
         :param help_handler: callable, a function that will be invoked when a new request for assistance arrives

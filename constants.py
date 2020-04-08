@@ -1,3 +1,5 @@
+"""Constants used throughout the code, mainly strings"""
+
 from enum import Enum
 
 VERSION = "0.4.0"  # follow SemVer conventions: https://semver.org/
@@ -74,6 +76,8 @@ BTN_GET_PHONE = "Trimite numărul de telefon"
 
 
 class State(Enum):
+    """These enums represent states in which a volunteer can be, from the bot's perspective"""
+
     EXPECTING_PHONE_NUMBER = 0
     AVAILABLE = 1
     REQUEST_SENT = 2
