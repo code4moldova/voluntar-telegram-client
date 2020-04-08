@@ -84,7 +84,12 @@ Payload sample `assign_assistance`, this is sent when the system decided which v
         "time": "20:45"
     }
 
+Payload sample `cancel_help_request`, this is sent when a fixer notifies a volunteer that the request to assist has been cancelled.
 
+    {
+          "request_id": "fe91e4b6-e902-4d03-8500-d058673cb9bd",
+          "volunteer": chat_id
+    }
 
 ## Bot's state
 Some information is stored in a persistent context that survives bot restarts. This information is needed to keep track
