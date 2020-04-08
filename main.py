@@ -540,11 +540,7 @@ class Ajubot:
         self.updater.dispatcher.user_data[assignee_chat_id].update(
             {"current_request": None, "reviewed_request": None, "state": c.State.AVAILABLE}
         )
-        # TODO ideally the key should be removed, but the current API doesn't allow it, see:
-        # https://github.com/python-telegram-bot/python-telegram-bot/issues/1869
-        # At the moment there is no logic that might blow up by retrieving the value of this key and then naively
-        # assuming that the data are there; but this might happen in the future, if one is not careful.
-        self.updater.dispatcher.bot_data.update({request_id: None})
+        del self.updater.dispatcher.bot_data[request_id]
         self.updater.dispatcher.update_persistence()
 
     @run_async
