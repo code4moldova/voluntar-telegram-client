@@ -108,7 +108,7 @@ class Backender:
     def send_request_result(self, request_id, payload):
         """Send final request-related state info and findings (exit survey, symptoms, etc.) to the server.
         :param request_id: str, identifier of request
-        :param payload: dict, see payload form in `main.py/finalize_request`"""
+        :param payload: dict, see payload form in `ajubot.py/finalize_request`"""
         # TODO implement this
         log.debug("Set req:%s to: `%s`", request_id, payload)
 
