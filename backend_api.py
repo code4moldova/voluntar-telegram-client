@@ -14,10 +14,12 @@ import base64
 
 import requests
 
-log = logging.getLogger("back")
+log = logging.getLogger("back")  # pylint: disable=invalid-name
 
 
-class Backender(object):
+class Backender:
+    """This is a client that talks to the backend, transmitting information from the Telegram bot"""
+
     def __init__(self, url, username, password):
         """Initialize the backend REST API client"""
         self.base_url = url
@@ -106,7 +108,7 @@ class Backender(object):
     def send_request_result(self, request_id, payload):
         """Send final request-related state info and findings (exit survey, symptoms, etc.) to the server.
         :param request_id: str, identifier of request
-        :param payload: dict, see payload form in `main.py/finalize_request`"""
+        :param payload: dict, see payload form in `ajubot.py/finalize_request`"""
         # TODO implement this
         log.debug("Set req:%s to: `%s`", request_id, payload)
 

@@ -1,6 +1,8 @@
+"""Constants used throughout the code, mainly strings"""
+
 from enum import Enum
 
-VERSION = "0.4.0"  # follow SemVer conventions: https://semver.org/
+VERSION = "0.4.1"  # follow SemVer conventions: https://semver.org/
 URL = "code4md.com"
 
 # Messages used in various phases of interaction
@@ -74,6 +76,8 @@ BTN_GET_PHONE = "Trimite numărul de telefon"
 
 
 class State(Enum):
+    """These enums represent states in which a volunteer can be, from the bot's perspective"""
+
     EXPECTING_PHONE_NUMBER = 0
     AVAILABLE = 1
     REQUEST_SENT = 2
