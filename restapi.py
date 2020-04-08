@@ -63,6 +63,7 @@ class BotRestApi(object):
         if request.method == "POST":
             try:
                 data = json.loads(request.get_data())
+                log.debug("Got help request: `%s`", data)
             except json.decoder.JSONDecodeError as err:
                 return BadRequest("Request malformed: %s" % err)
 
@@ -77,16 +78,15 @@ class BotRestApi(object):
             return MethodNotAllowed()
 
         if request.method == "POST":
-            log.debug("Got cancel request: `%s`", request.form)
-            if False:
-                # TODO verify if the payload has all the required data
-                # TODO define parameters in the data
-                # do some processing, if there are any issues, return an error
-                return BadRequest("Request malformed")
+            try:
+                data = json.loads(request.get_data())
+                log.debug("Got cancel request: `%s`", data)
+            except json.decoder.JSONDecodeError as err:
+                return BadRequest("Request malformed: %s" % err)
 
             # if we got this far, it means we're ok, so we invoke the function that does the job
             # and pass it the input parameters
-            self.cancel_request_handler(request.form)
+            self.cancel_request_handler(data)
             return Response("Request handled")
 
     def on_assign_help_request(self, request):
@@ -97,6 +97,7 @@ class BotRestApi(object):
         if request.method == "POST":
             try:
                 data = json.loads(request.get_data())
+                log.debug("Got help assign request: `%s`", data)
             except json.decoder.JSONDecodeError as err:
                 return BadRequest("Request malformed: %s" % err)
 
