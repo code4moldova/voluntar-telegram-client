@@ -324,6 +324,7 @@ class Ajubot:
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup(k.inprogress_choices),
             )
+            self.backend.update_request_status(request_id, "onProgress")
 
         elif response_code == "handle_done":
             # they pressed 'Mission accomplished' in the GUI
@@ -335,6 +336,7 @@ class Ajubot:
                 reply_markup=InlineKeyboardMarkup(k.endgame_choices),
             )
             context.user_data["state"] = c.State.EXPECTING_AMOUNT
+            self.backend.update_request_status(request_id, "done")
 
         elif response_code == "handle_no_expenses":
             # they indicated no compensation is required; proceed to the exit survey and ask some additional questions
