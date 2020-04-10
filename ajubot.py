@@ -18,6 +18,7 @@ from telegram.ext.dispatcher import run_async
 import constants as c
 import keyboards as k
 import restapi
+from timetools import utc_short_to_user_short
 
 log = logging.getLogger("ajubot")  # pylint: disable=invalid-name
 
@@ -398,7 +399,7 @@ class Ajubot:
         a rejection."""
         chat_id = update.effective_chat.id
         response_code = update.callback_query["data"]  # eta_later, eta_never, eta_20:45, etc.
-        log.info("Offer @%s @%s", update.effective_chat.id, response_code)
+        log.info("Offer @%s raw: @%s", update.effective_chat.id, response_code)
 
         if response_code == "eta_never":
             # the user pressed the button to say they're cancelling their offer
@@ -414,15 +415,20 @@ class Ajubot:
                 reply_markup=InlineKeyboardMarkup(k.build_dynamic_keyboard()),
             )
         else:
-            # This is an actual offer, ot looks like `eta_20:40`, extract the actual timestamp
+            # This is an actual offer, ot looks like `eta_20:40`, extract the actual timestamp in UTC
             offer = response_code.split("_")[-1]
+            log.info(
+                "Relaying offer @%s UTC (%s %s)", offer, utc_short_to_user_short(offer), c.TIMEZONE
+            )
 
             # tell the backend about it
             request_id = context.user_data["reviewed_request"]
             self.backend.relay_offer(request_id, chat_id, offer)
 
             # tell the user that this is now processed by the server
-            self.send_message(chat_id, (c.MSG_ACK_TIME % offer) + c.MSG_COORDINATING)
+            self.send_message(
+                chat_id, (c.MSG_ACK_TIME % utc_short_to_user_short(offer)) + c.MSG_COORDINATING
+            )
 
     def on_contact(self, update, context):
         """This is invoked when the user sends us their contact information, which includes their phone number."""
@@ -576,7 +582,9 @@ class Ajubot:
             log.debug("No such request %s, ignoring", request_id)
             return
         else:
-            self.updater.dispatcher.bot_data[request_id].update({"time": data["time"]})
+            self.updater.dispatcher.bot_data[request_id].update(
+                {"time": utc_short_to_user_short(data["time"])}
+            )
 
         # first of all, notify the others that they are off the hook and update their state accordingly
         for chat_id in request_details["volunteers"]:

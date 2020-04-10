@@ -13,7 +13,9 @@ from ajubot import Ajubot
 log = logging.getLogger("main")
 
 logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s %(levelname)5s %(name)5s - %(message)s"
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)5s %(name)5s - %(message)s",
+    datefmt="%H:%M:%S",
 )
 
 # you might want to re-enable these two lines if you really need to debug the bot's internals

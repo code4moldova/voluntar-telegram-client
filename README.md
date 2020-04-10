@@ -81,7 +81,7 @@ Payload sample `assign_assistance`, this is sent when the system decided which v
     {
         "request_id": "fe91e4b6-e902-4d03-8500-d058673cb9bd",
         "volunteer": chat_id,
-        "time": "20:45"
+        "time": "20:45"  # note that this time **must** be in UTC
     }
 
 Payload sample `cancel_help_request`, this is sent when a fixer notifies a volunteer that the request to assist has been cancelled.
@@ -129,6 +129,10 @@ from the backend.
 1. Run ``make autoformat`` to format all ``.py`` files
 2. Run ``make verify`` and examine the output, looking for issues that need to be addressed
 3. Open a pull request with your changes
+
+To avoid time-related confusions, set `constants.py/TIMEZONE` to your timezone. The logs will explicitly say
+the time is in UTC, and also display a user-centric timestamp, to remind you about this. Nevertheless, you
+should keep this in mind at all times.
 
 
 # How to use the Docker image
