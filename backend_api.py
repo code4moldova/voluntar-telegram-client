@@ -89,7 +89,7 @@ class Backender:
         :param request_id: str, identifier of request
         :param volunteer_id: str, volunteer identifier
         :param offer: str, the offer indicates when the volunteer will be able to reach the beneficiary"""
-        log.debug("Relay offer for req:%s from vol:%s -> %s", request_id, volunteer_id, offer)
+        log.debug("Relay offer for req:%s from vol:%s -> %s (UTC)", request_id, volunteer_id, offer)
         payload = {
             "telegram_chat_id": volunteer_id,
             "offer_beneficiary_id": request_id,

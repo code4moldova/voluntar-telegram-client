@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from telegram import KeyboardButton, InlineKeyboardButton
 
 import constants as c
+import timetools
 
 default_board = [
     [KeyboardButton("/vreausaajut")],
@@ -127,6 +128,8 @@ further_comments_choices = [
 def build_dynamic_keyboard_first_responses():
     """Build a dynamic keyboard that looks like `eta_first_responses`, but where the callback data contains
     timestamps that are N minutes in the future from now"""
+    # NOTE: in this case none of the actual timestamps are shown to the user, so the callback info
+    #       is in UTC, users will only see relative offsets, like "in 30min" or "in 1 h", so they're unchanged
     now = datetime.utcnow()
     timedelta(minutes=30)
 
@@ -182,20 +185,26 @@ def build_dynamic_keyboard(time_from=None):
         ...
     ]
     """
-    times = [item.strftime("%H:%M") for item in get_etas_today(time_from)]
+    # This is a list of tuples, where the first element is UTC time, for use in the keyboard callback
+    # and the second element is a user-localized time, for use in the keyboard button title
+    times = [
+        (item.strftime("%H:%M"), timetools.utc_to_user(item).strftime("%H:%M"))
+        for item in get_etas_today(time_from)
+    ]
+
     chunkified_times = chunkify(times)
 
     keyboard = []
     for entry in chunkified_times:
         row = []
-        for sub_entry in entry:
-            row.append(InlineKeyboardButton(sub_entry, callback_data="eta_" + sub_entry))
+        for utc_time, user_time in entry:
+            row.append(InlineKeyboardButton(user_time, callback_data="eta_" + utc_time))
         keyboard.append(row)
     return keyboard
 
 
 if __name__ == "__main__":
     # print(build_dynamic_keyboard())
-    # print(build_dynamic_keyboard_first_responses())
+    print(build_dynamic_keyboard_first_responses())
 
-    print(update_dynamic_keyboard_symptom(symptom_choices, "symptom_fever"))
+    # print(update_dynamic_keyboard_symptom(symptom_choices, "symptom_fever"))
