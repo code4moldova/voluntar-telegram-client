@@ -138,5 +138,5 @@ should keep this in mind at all times.
 # How to use the Docker image
 
 1. Build it first: `docker build -t covid-tg-bot .`. Run `docker images` to ensure it is in the list.
-2. Run it with: `docker run --rm -it -p 5001:5001 -e TELEGRAM_TOKEN='----replace-token-here' -e COVID_BACKEND=http://127.0.0.1:5000/ e COVID_BACKEND_USER=admin e COVID_BACKEND_PASS=secret covid-tg-bot` (adjust to
+2. Run it with: `docker run --rm -it -p 5001:5001 -v /path/to/folder:/app -e TELEGRAM_TOKEN='----replace-token-here' -e COVID_BACKEND=http://127.0.0.1:5000/ e COVID_BACKEND_USER=admin e COVID_BACKEND_PASS=secret covid-tg-bot` (adjust to
 taste, for example you might want to remove `--rm`)

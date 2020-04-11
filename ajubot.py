@@ -325,7 +325,7 @@ class Ajubot:
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup(k.inprogress_choices),
             )
-            self.backend.update_request_status(request_id, "onProgress")
+            self.backend.update_request_status(request_id, "onprogress")
 
         elif response_code == "handle_done":
             # they pressed 'Mission accomplished' in the GUI
@@ -350,7 +350,7 @@ class Ajubot:
             self.send_message(chat_id, c.MSG_NO_WORRIES_LATER)
             context.user_data["reviewed_request"] = None
             context.user_data["state"] = c.State.AVAILABLE
-            self.backend.update_request_status(request_id, "CANCELLED")
+            self.backend.update_request_status(request_id, "cancelled")
 
     def confirm_dispatch(self, update, context):
         """This is invoked when the responded to the "are you sure you are healthy?" message"""

@@ -111,6 +111,7 @@ class Backender:
         :param payload: dict, see payload form in `ajubot.py/finalize_request`"""
         # TODO implement this
         log.debug("Set req:%s to: `%s`", request_id, payload)
+        self._put(payload=payload, url="beneficiary")
 
 
 if __name__ == "__main__":
