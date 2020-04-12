@@ -185,9 +185,14 @@ class Ajubot:
                 reply_markup=InlineKeyboardMarkup(k.would_you_do_it_again_choices),
             )
             # remove the last state of the symptom keyboard from this user, such that the next time they receive an
-            # assistance request, the keyboard is fresh
-            if "symptom_keyboard" in context.user_data:
-                del context.user_data["symptom_keyboard"]
+            # assistance request, the keyboard is fresh (if it exists)
+            context.user_data.pop("symptom_keyboard", None)
+
+            # It could happen that they ticked some symptoms first, but then they clicked "no idea" or "none", leaving
+            # the other checkboxes ticked. In this case we clear the list, assuming that the user's last action is the
+            # right one.
+            if response_code in ["symptom_none", "symptom_noidea"]:
+                context.bot_data[request_id]["symptoms"] = []
 
         else:
             # they ticked an actual symptom, send an ACK to them as feedback. Note that we can get into this part of
@@ -253,6 +258,8 @@ class Ajubot:
         context.user_data["state"] = c.State.AVAILABLE
         context.user_data["current_request"] = None
         context.user_data["reviewed_request"] = None
+        # Remove symptom-keyboard-related info, if it is in the state
+        context.user_data.pop("symptom_keyboard", None)
         del context.bot_data[request_id]
 
         # cherry on top

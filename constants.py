@@ -2,7 +2,7 @@
 
 from enum import Enum
 
-VERSION = "0.4.2"  # follow SemVer conventions: https://semver.org/
+VERSION = "0.4.3"  # follow SemVer conventions: https://semver.org/
 URL = "code4md.com"
 
 # Though we operate with UTC internally, the times will be shown to the users
