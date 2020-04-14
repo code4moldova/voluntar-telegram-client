@@ -534,7 +534,12 @@ class Ajubot:
             current_state = self.updater.persistence.user_data[chat_id].get("state", None)
 
             if current_state in [c.State.REQUEST_IN_PROGRESS, c.State.REQUEST_ASSIGNED]:
-                log.debug("Vol%s is already working on a request, skippint")
+                log.debug("Vol%s is already working on a request")
+                # the volunteer is already working on another request; so we take the new one and add it to a set
+                # so we can retrieve it later, if necessary
+                other_requests = self.updater.persistence.user_data[chat_id].get('other_requests', set([]))
+                other_requests.add(request_id)
+                self.updater.dispatcher.user_data[chat_id].update({"other_requests": other_requests})
                 continue
 
             self.updater.bot.send_message(
