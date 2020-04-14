@@ -236,6 +236,48 @@ class Ajubot:
             reply_markup=InlineKeyboardMarkup(k.symptom_choices, one_time_keyboard=True),
         )
 
+    def find_responsible_volunteer(self, request_id):
+        """Helper function that goes through all the states of all volunteers, to find which of them is
+        responsible for a specific request.
+        :param request_id: str, request identifier we're looking for
+        :returns: str chat_id of volunteer who handles the given request OR None"""
+        # NOTE: at the moment this is a pretty ugly implementation, as it iterates through all the users; ideally
+        # this info should be kept in the bot's state, where each request_id is a key and the value is a dict that
+        # might contain a "responsible volunteer" element
+        for volunteer, volunteer_state in self.updater.dispatcher.user_data.items():
+            if volunteer_state["current_request"] == request_id:
+                return volunteer
+
+    def take_next_request(self, update, context):
+        """See if there are any other requests that this user was summoned for, and act accordingly"""
+        chat_id = update.effective_chat.id
+        other_requests = context.user_data.get("other_requests", set([]))
+        log.debug("Vol:%s additional requests: %s", chat_id, other_requests)
+
+        # go through the other requests and figure out if they're still relevant
+        for request_id in other_requests:
+            if request_id not in context.bot_data:
+                # the request has been removed from the bot's state, it was probably handled by someone else
+                # and was completed, which lead to its deletion from the state.
+                other_requests.remove(request_id)
+                continue
+
+            # if we got this far, the request is still alive and we're still looking for volunteers to deal with it
+            # so we keep going, but first we ensure it hasn't already been taken by someone else
+            another_handler = self.find_responsible_volunteer(request_id)
+            if another_handler:
+                log.debug(
+                    "Inside vol%s, req:%s already handled by vol:%s",
+                    chat_id,
+                    request_id,
+                    another_handler,
+                )
+                other_requests.remove(request_id)
+            else:
+                # the request is alive and it hasn't been taken by anyone else - show it to the user
+                # TODO
+                pass
+
     def finalize_request(self, update, context, request_id):
         """Thank the volunteer, send the final metadata to the server and then send the volunteer a happy GIF"""
         self.send_message_ex(update.effective_chat.id, c.MSG_THANKS_FINAL)
@@ -262,8 +304,11 @@ class Ajubot:
         context.user_data.pop("symptom_keyboard", None)
         del context.bot_data[request_id]
 
-        # cherry on top
+        # cherry on top, send a cute gif to make the volunteer a bit happier
         self.send_thanks_image(update.effective_chat.id)
+
+        # check if there are other requests they should handle
+        self.take_next_request(update, context)
 
     def send_thanks_image(self, chat_id):
         """Send a random thank you GIF from our local collection, as an added bonus"""
@@ -537,9 +582,14 @@ class Ajubot:
                 log.debug("Vol%s is already working on a request")
                 # the volunteer is already working on another request; so we take the new one and add it to a set
                 # so we can retrieve it later, if necessary
-                other_requests = self.updater.persistence.user_data[chat_id].get('other_requests', set([]))
+                other_requests = self.updater.persistence.user_data[chat_id].get(
+                    "other_requests", set([])
+                )
                 other_requests.add(request_id)
-                self.updater.dispatcher.user_data[chat_id].update({"other_requests": other_requests})
+                self.updater.dispatcher.user_data[chat_id].update(
+                    {"other_requests": other_requests}
+                )
+                # TODO decide whether we want to inform them about it right away, or later
                 continue
 
             self.updater.bot.send_message(
