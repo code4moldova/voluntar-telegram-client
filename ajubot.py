@@ -304,9 +304,11 @@ class Ajubot:
         # if we got this far it means it is some sort of an arbitrary message that we weren't yet expecting
         log.warning("unexpected message ..........")
 
-    def on_reject(self, update, _context):
+    def on_reject(self, update, _context):  # TODO make to ask only two or three option requests
         """Invoked when the user presses `No` after receiving a request for help"""
-        self.send_message(update.message.chat_id, c.MSG_THANKS_NOTHANKS)
+        # self.send_message(update.message.chat_id, c.MSG_THANKS_NOTHANKS)
+        data = self.backend.get_new_requests()
+        self.hook_request_assistance(data=data)
 
     def on_accept(self, update, _context):
         """Invoked when a user presses `Yes` after receiving a request for help"""

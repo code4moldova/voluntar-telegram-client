@@ -11,6 +11,7 @@ The easiest way to work on this client is to run `python backend_api.py`, adjust
 
 import logging
 import base64
+from urllib.parse import urljoin
 
 import requests
 
@@ -29,7 +30,8 @@ class Backender:
     def _get(self, url):
         """Function for internal use, that sends GET requests to the server
         :param url: str, this will be added to the base_url to which the request is sent"""
-        res = requests.get(self.base_url + url, auth=(self.username, self.password))
+        res = requests.get(urljoin(self.base_url, url), auth=(self.username,
+                                                              self.password))
         # log.debug('Got %s', res.status_code)
         if res.status_code == 200:
             return res
@@ -40,13 +42,39 @@ class Backender:
         """Function for internal use, it sends POST requests to the server
         :param payload: what needs to be sent within the POST request
         :param url: str, this will be added to the base_url to which the request is sent"""
-        requests.post(self.base_url + url, auth=(self.username, self.password), json=payload)
+        requests.post(urljoin(self.base_url, url), auth=(self.username, self.password),
+                      json=payload)
 
     def _put(self, payload, url=""):
         """Function for internal use, it sends PUT requests to the server
         :param payload: what needs to be sent within the PUT request
         :param url: str, this will be added to the base_url to which the request is sent"""
-        requests.put(self.base_url + url, auth=(self.username, self.password), json=payload)
+        requests.put(urljoin(self.base_url, url), auth=(self.username, self.password), json=payload)
+
+    def get_new_requests(self):
+        # {
+        #     "request_id": "5e88845adcc1e3b2786c311e",
+        #     "beneficiary": "Jennifer Lopez",
+        #     "address": "str. HappyStreet"
+        #     "needs": "some beer",
+        #     "gotSymptoms": false,
+        #     "safetyCode": "bla bla bla",
+        #     "phoneNumber": "+37312345678"
+        #     "remarks": "No remarks"
+        #     "volunteers": ["324354681651", "5168132468431"]
+        #  },
+        """Retrieve the details of all new requests
+        :returns: dict with the metadata"""
+        response = self._get("beneficiary/filters/1/2")
+        raw = response.json()
+
+        # if there are no results, return None
+        if raw["count"] == 0:
+            return None
+
+        # Else, if we got this far, it means that there are new requests and we can retrieve their
+        # details.
+        return raw["list"][0]
 
     def get_request_details(self, request_id):
         """Retrieve the details of a request

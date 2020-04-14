@@ -1,4 +1,4 @@
-
+state.bin
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
@@ -146,7 +146,7 @@ dmypy.json
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-
+.idea/
 # Generated files
 .idea/**/contentModel.xml
 
