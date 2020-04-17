@@ -247,7 +247,11 @@ class Ajubot:
             "request_id": request_id,
             "amount": context.bot_data[request_id].get("amount", 0),
             "further_comments": context.bot_data[request_id].get("further_comments", ""),
-            "symptoms": [v for s, v in c.SYMPTOMS.items() if s in context.bot_data[request_id].get("symptoms", [])],
+            "symptoms": [
+                v
+                for s, v in c.SYMPTOMS.items()
+                if s in context.bot_data[request_id].get("symptoms", [])
+            ],
             "wellbeing": context.bot_data[request_id]["wellbeing"],
             "would_return": context.bot_data[request_id]["would_return"],
         }
