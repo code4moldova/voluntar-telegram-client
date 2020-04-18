@@ -14,6 +14,8 @@ import base64
 
 import requests
 
+import constants as c
+
 log = logging.getLogger("back")  # pylint: disable=invalid-name
 
 
@@ -67,10 +69,31 @@ class Backender:
         """Tell the backend that we've got a new bot user, along with their phone number, chat_id and nickname.
         :param nickname: optional str, Telegram nickname of the user, may be None if the nickname is not set
         :param chat_id: int, numerical chat_id that uniquely identifies the user's session with the bot in Telegram
-        :param phone: str, phone number, full representation, e.g.:'+37379000000'"""
+        :param phone: str, phone number, full representation, e.g.:'+37379000000'
+        :returns: bool, True if the user is known to the backend, otherwise False"""
         log.debug("Link vol:%s to chat %s and tel %s", nickname, chat_id, phone)
         payload = {"telegram_id": nickname, "telegram_chat_id": chat_id, "phone": phone}
         self._put(payload=payload, url="volunteer")
+        return False
+        # TODO
+
+    def register_pending_volunteer(self, data):
+        """Tell the backend that we have a new volunteer who wants to help
+        :param data: dict with the user profile details"""
+        # Payload example
+        # {'first_name', 'Alexei',
+        #  'last_name', 'Murzicescu',
+        #  'availability', '8',  # how many hours per day they can dedicate to the cause
+        #  'activities', ['transport', 'delivery', 'phone'],
+        #  'phone', '+3730000000'
+        #  'chat_id' 12312323  # telegram chat id}
+        # TODO
+        log.debug(
+            "Register chat_id=%s f_name=%s l_name=%s",
+            data[c.PROFILE_CHAT_ID],
+            data[c.PROFILE_FIRST_NAME],
+            data[c.PROFILE_LAST_NAME],
+        )
 
     # TODO
     def upload_shopping_receipt(self, data, request_id):
