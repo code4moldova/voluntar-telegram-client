@@ -131,9 +131,7 @@ class Ajubot:
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_symptom, pattern="^symptom.*"))
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_wouldyou, pattern="^wouldyou.*"))
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_further, pattern="^further.*"))
-        dispatcher.add_handler(
-            CallbackQueryHandler(self.confirm_assist_activities, pattern="^assist.*")
-        )
+        dispatcher.add_handler(CallbackQueryHandler(self.confirm_activities, pattern="^assist.*"))
 
         dispatcher.add_handler(MessageHandler(Filters.photo, self.on_photo))
         dispatcher.add_handler(MessageHandler(Filters.contact, self.on_contact))
@@ -169,7 +167,7 @@ class Ajubot:
         )
         context.user_data["state"] = c.State.EXPECTING_FURTHER_COMMENTS
 
-    def confirm_assist_activities(self, update, context):
+    def confirm_activities(self, update, context):
         """This is invoked during onboarding, when the user indicates the type of assistance they can offer"""
         chat_id = update.effective_chat.id
         try:
@@ -585,7 +583,7 @@ class Ajubot:
 
                 if key == c.PROFILE_ACTIVITIES:
                     # this is a special case, because we'll send them an interactive keyboard with options to chose from
-                    self.confirm_assist_activities(update, context)
+                    self.confirm_activities(update, context)
                     return
 
                 return
