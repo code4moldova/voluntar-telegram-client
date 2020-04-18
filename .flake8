@@ -7,5 +7,6 @@
 # because black insists on having it this way; there's no way to
 # reconcile them.
 # E203 - for compatibility with black, see https://github.com/psf/black#slices
-ignore = E501, W503, W504, E203
+# W605 - Some escape sequences are required by Telegram's markdown parser
+ignore = E501, W503, W504, E203, W605
 max-line-length = 100

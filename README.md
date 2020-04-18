@@ -68,6 +68,7 @@ Payload sample `assistance_request`, this is sent when a new request is added to
         "address": "str. 31 August",
         "needs": ["Medicamente", "Produse alimentare"],
         "gotSymptoms": false,
+        "hasDisabilities": false,
         "safetyCode": "Izvor-45",
         "phoneNumber": "+373 777 77 777",
         "remarks": ["Nu lucreaza ascensorul", "Are caine rau"],

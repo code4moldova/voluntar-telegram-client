@@ -4,6 +4,7 @@ import logging
 import os
 from random import choice
 from tempfile import NamedTemporaryFile
+from collections import OrderedDict
 
 from telegram.ext import (
     Filters,
@@ -66,16 +67,13 @@ class Ajubot:
     def on_bot_start(update, context):
         """Send a message when the command /start is issued."""
         user = update.effective_user
+        chat_id = update.effective_chat.id
         log.info(
-            "ADD %s, %s, %s, %s",
-            user.username,
-            user.full_name,
-            update.effective_chat.id,
-            user.language_code,
+            "ADD %s, %s, %s, %s", user.username, user.full_name, chat_id, user.language_code,
         )
 
         context.bot.send_message(
-            chat_id=update.message.chat_id,
+            chat_id=chat_id,
             text=c.MSG_PHONE_QUERY,
             reply_markup=ReplyKeyboardMarkup([[k.contact_keyboard]], one_time_keyboard=True),
         )
@@ -133,6 +131,7 @@ class Ajubot:
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_symptom, pattern="^symptom.*"))
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_wouldyou, pattern="^wouldyou.*"))
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_further, pattern="^further.*"))
+        dispatcher.add_handler(CallbackQueryHandler(self.confirm_activities, pattern="^assist.*"))
 
         dispatcher.add_handler(MessageHandler(Filters.photo, self.on_photo))
         dispatcher.add_handler(MessageHandler(Filters.contact, self.on_contact))
@@ -168,6 +167,58 @@ class Ajubot:
         )
         context.user_data["state"] = c.State.EXPECTING_FURTHER_COMMENTS
 
+    def confirm_activities(self, update, context):
+        """This is invoked during onboarding, when the user indicates the type of assistance they can offer"""
+        chat_id = update.effective_chat.id
+        try:
+            response_code = update.callback_query["data"]  # assist_{transport|delivery|phone}
+        except TypeError:
+            # This is the first time this function is invoked
+            self.updater.bot.send_message(
+                chat_id=chat_id,
+                text=c.MSG_ONBOARD_ACTIVITIES_NUDGE,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup(
+                    k.new_assistance_choices(), one_time_keyboard=True
+                ),
+            )
+            return
+
+        # we're here again after the user ticked some boxes
+        log.info("Assist chat_id:%s %s", chat_id, response_code)
+
+        # Update list of assistance features in the bot's state with respect to this user's registration state
+        # NOTE that the `activities` key was added there when the profile was created, so there's no need to check first
+        activities = context.bot_data["registrations"][chat_id]["activities"]
+
+        if response_code == "assist_next":
+            # they clicked "next"
+            if not activities:
+                # but no activities were selected, remind the user that they can't leave this empty
+                self.send_message(chat_id, c.MSG_ONBOARD_ACTIVITIES_NUDGE)
+                return
+            else:
+                # otherwise let's continue building the profile
+                log.info("Activities complete: `%s`", activities)
+                self.build_profile(update, context)
+                return
+
+        # if we got this far it means they're still ticking activity-related checkboxes
+        if response_code in activities:
+            activities.remove(response_code)
+        else:
+            activities.append(response_code)
+
+        # This is a dynamically updated keyboard, see the example in `confirm_symptoms`
+        previous_keyboard = context.user_data.get("assist_keyboard", k.new_assistance_choices())
+        updated_keyboard = k.update_dynamic_keyboard_assistance(previous_keyboard, response_code)
+        context.user_data["assist_keyboard"] = updated_keyboard
+        self.updater.bot.edit_message_reply_markup(
+            chat_id=chat_id,
+            message_id=update.effective_message.message_id,
+            reply_markup=InlineKeyboardMarkup(updated_keyboard),
+        )
+
     def confirm_symptom(self, update, context):
         """This is invoked when the user reported the observed symptoms, if any"""
         chat_id = update.effective_chat.id
@@ -198,8 +249,9 @@ class Ajubot:
             # they ticked an actual symptom, send an ACK to them as feedback. Note that we can get into this part of
             # the code multiple times, depending on how they tick the checkboxes - so we have to keep track of the
             # state and update the inline keyboard accordingly
-            previous_keyboard = context.user_data.get("symptom_keyboard", k.symptom_choices)
+            previous_keyboard = context.user_data.get("symptom_keyboard", k.new_symptom_choices())
             updated_keyboard = k.update_dynamic_keyboard_symptom(previous_keyboard, response_code)
+            context.user_data["symptom_keyboard"] = updated_keyboard
 
             self.updater.bot.edit_message_reply_markup(
                 chat_id=chat_id,
@@ -301,6 +353,10 @@ class Ajubot:
             self.finalize_request(update, context, request_id)
             return
 
+        if context.user_data["state"] == c.State.EXPECTING_PROFILE_DETAILS:
+            self.build_profile(update, context, raw_text=update.effective_message.text)
+            return
+
         # if we got this far it means it is some sort of an arbitrary message that we weren't yet expecting
         log.warning("unexpected message ..........")
 
@@ -385,6 +441,9 @@ class Ajubot:
                 for remark in request_details["remarks"]:
                     message += "- %s\n" % remark
 
+            if "hasDisabilities" in request_details:
+                message += "\n%s\n" % (c.MSG_DISABILITY % request_details)
+
             message += "\n" + c.MSG_LET_ME_KNOW
             self.updater.bot.send_message(
                 chat_id=chat_id,
@@ -440,13 +499,10 @@ class Ajubot:
     def on_contact(self, update, context):
         """This is invoked when the user sends us their contact information, which includes their phone number."""
         user = update.effective_user
+        chat_id = update.effective_chat.id
         phone = update.message.contact.phone_number
         log.info(
-            "TEL from %s, %s, @%s, %s",
-            user.username,
-            user.full_name,
-            update.effective_chat.id,
-            phone,
+            "TEL from %s, %s, @%s, %s", user.username, user.full_name, chat_id, phone,
         )
 
         # Here's an example of what else you can find in update['message'].contact.to_dict()
@@ -455,13 +511,98 @@ class Ajubot:
         # {'first_name': 'Alex', 'id': 253150000, 'is_bot': False, 'language_code': 'en', 'username': 'ralienpp'}
 
         # Tell the backend about it, such that from now on it knows which chat_id corresponds to this user
-        self.backend.link_chatid_to_volunteer(user.username, update.effective_chat.id, phone)
+        known_user = self.backend.link_chatid_to_volunteer(
+            user.username, update.effective_chat.id, phone
+        )
 
-        # Acknowledge receipt and tell the user that we'll contact them when new requests arrive
-        update.message.reply_text(c.MSG_STANDBY)
+        if known_user:
+            # Mark the user as available once onboarding is complete
+            context.user_data["state"] = c.State.AVAILABLE
+            # Acknowledge receipt and tell the user that we'll contact them when new requests arrive
+            update.message.reply_text(c.MSG_STANDBY)
+            return
 
-        # Mark the user as available once onboarding is complete
+        # If we got this far, this is a completely new person who initiated the registration process via the bot, it is
+        # time to ask them a few things and build a profile
+        self.build_profile(update, context, phone=phone)
+
+    def build_profile(self, update, context, phone=None, raw_text=None):
+        """Gradually build a user's profile, by asking questions and expecting their answers. This function will be
+        called multiple times.
+        :param phone: str, optional, the user's phone number; this option MUST be present when build_profile is called
+                      for the first time
+        :param raw_text: optional, raw text sent by the user throughout the calls of `build_profile`. If it is None,
+                         it is the first time the function was called"""
+        user = update.effective_user
+        chat_id = update.effective_chat.id
+        log.info("PROFILE from %s `%s`", chat_id, raw_text)
+        # import pdb; pdb.set_trace()
+
+        # If necessary, create the part of the state that holds data about registration procedures
+        if "registrations" not in context.bot_data:
+            context.bot_data["registrations"] = {}
+
+        if chat_id not in context.bot_data["registrations"]:
+            # create a new user profile and add it to the bot's state, so we can populate it
+            # as we ask the user to provide info about themselves; keep in mind that it is an ORDERED dict, we'll
+            # rely on this later!
+            profile = OrderedDict(
+                {
+                    c.PROFILE_FIRST_NAME: user.first_name,  # may be empty at first
+                    c.PROFILE_LAST_NAME: user.last_name,  # may be empty at first
+                    c.PROFILE_AVAILABILITY: None,
+                    c.PROFILE_ACTIVITIES: [],
+                    c.PROFILE_PHONE: phone,
+                    c.PROFILE_EMAIL: None,
+                }
+            )
+            context.bot_data["registrations"][chat_id] = profile
+        else:
+            profile = context.bot_data["registrations"][chat_id]
+
+        for key, value in profile.items():
+            if not value:
+                # a part of the profile is empty, maybe we should ask about it?
+                if raw_text:
+                    # This seems to be yet another call of this function, so raw_text contains the answer to the
+                    # question asked earlier - let's populate it.
+                    # NOTE that we use an OrderedDict when building the profile, so we know for sure this answer
+                    # goes to that particular question (i.e. key in the dict)
+                    profile[key] = raw_text
+                    raw_text = None
+                    continue
+
+                # if we got this far, we stumbled upon the next missing part of the profile
+                context.user_data["state"] = c.State.EXPECTING_PROFILE_DETAILS
+
+                self.updater.bot.send_message(
+                    chat_id=chat_id,
+                    text=c.PROFILE_QUESTIONS[key],
+                    parse_mode=ParseMode.MARKDOWN_V2,
+                )
+
+                if key == c.PROFILE_ACTIVITIES:
+                    # this is a special case, because we'll send them an interactive keyboard with options to chose from
+                    self.confirm_activities(update, context)
+                    return
+
+                return
+
+        # if we got this far, it means the profile is complete, inform the user about it
+        self.updater.bot.send_message(
+            chat_id=chat_id, text=c.MSG_ONBOARD_NEXT_STEPS, parse_mode=ParseMode.MARKDOWN,
+        )
+
+        # and the backend, but first let's augment the profile with more data
+        profile[c.PROFILE_CHAT_ID] = chat_id
+        self.backend.register_pending_volunteer(profile)
         context.user_data["state"] = c.State.AVAILABLE
+
+        # remove if from the state, because we don't need it anymore
+        del context.bot_data["registrations"][chat_id]
+
+        # Also get rid of this user's individual keyboard for assitance activities
+        context.user_data.pop("assist_keyboard", None)
 
     def on_photo(self, update, context):
         """Invoked when the user sends a photo to the bot. In our case, photos are always shopping receipts. Keep in

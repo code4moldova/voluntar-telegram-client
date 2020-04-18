@@ -2,7 +2,7 @@
 
 from enum import Enum
 
-VERSION = "0.4.3"  # follow SemVer conventions: https://semver.org/
+VERSION = "0.5.0"  # follow SemVer conventions: https://semver.org/
 URL = "code4md.com"
 
 # Though we operate with UTC internally, the times will be shown to the users
@@ -17,11 +17,12 @@ MSG_THANKS_NOTHANKS = "Bine, te vom alerta când apar cereri noi."
 MSG_THANKS_FINAL = "Îți mulțumim mult pentru ajutor."
 MSG_ACK_TIME = "Bine, ora %s, "
 MSG_COORDINATING = "coordonez cu alți voluntari."
-MSG_PHONE_QUERY = "Te rog să ne transmiți numărul de telefon, pentru a finaliza înregistrarea."
+MSG_PHONE_QUERY = "Te rog să ne transmiți numărul de contact, pentru a începe înregistrarea."
 MSG_ANOTHER_ASSIGNEE = "Altcineva merge acolo. Te anunțăm când apar noi cereri"
 MSG_REQUEST_CANCELED = "Cererea de ajutor a fost anulată."
 MSG_LET_ME_KNOW = "Anunță-mă când te-ai pornit"
 MSG_LET_ME_KNOW_ARRIVE = "Anunță-mă când e gata"
+MSG_DISABILITY = "♿ Atenție, %(beneficiary)s are careva dizabilități, posibil va deschide mai lent ușa sau va răspunde întârziat, să ai răbdare."
 MSG_OTHER_REMARKS = "*Remarci* de la alți voluntari:\n"
 MSG_NO_WORRIES_LATER = (
     "Bine, nu te îngrijora, vor apărea și alte cereri în viitor. Ai grijă de tine!"
@@ -93,10 +94,57 @@ class State(Enum):
     EXPECTING_RECEIPT = 8
     EXPECTING_EXIT_SURVEY = 9
     EXPECTING_FURTHER_COMMENTS = 10
+    EXPECTING_PROFILE_DETAILS = 11
 
 
 SYMPTOMS = {
     "symptom_fever": "Febră",
     "symptom_cough": "Tuse",
     "symptom_heavybreathing": "Respirație cu dificultăți",
+}
+
+
+MSG_ONBOARD_NEXT_STEPS = (
+    "Îți mulțumim pentru răspunsuri. În curs de *2 zile* vei fi contactat telefonic de"
+    " operatorii noștri.\n\nUrmătorii pași vor fi:\n"
+    "- Pregătește *buletinul de identitate*\n"
+    "- Vino la **str. București 35** pentru a *semna contractul*\n"
+    "- Acolo vei primi *legitimația*\n\n"
+    "Toate astea *după ce te sunăm _noi_*. Acum doar așteaptă."
+)
+
+MSG_ACTIVITIES_EXPLAINED = (
+    "\- _Transport_: oferirea serviciilor de transportare\n"
+    "\- _Apeluri_: preluarea cererilor persoanelor care necesită ajutor, la telefon\n"
+    "\- _Livrare_: procurarea produselor alimentare și a medicamentelor, atât și livrarea acestora persoanelor ce sunt autoizolați în casă din diverse motive"
+)
+
+
+MSG_ONBOARD_FIRST_NAME = "Cum *te cheamă*?"
+MSG_ONBOARD_LAST_NAME = "Care e numele tău de *familie*?"
+MSG_ONBOARD_EMAIL = "Care e adresa ta de *email*?"
+MSG_ONBOARD_AVAILABILITY = (
+    "Aproximativ *câte ore* pe zi ești disponibil? \(introdu un număr, ex: 2\)"
+)
+MSG_ONBOARD_ACTIVITIES = "*Cum* poți contribui?\n\n" + MSG_ACTIVITIES_EXPLAINED
+MSG_ONBOARD_ACTIVITIES_NUDGE = "Alege cel puțin o opțiune"
+
+
+# These are used as keys in the user-profile dictionary that we assemble during onboarding
+PROFILE_FIRST_NAME = "first_name"
+PROFILE_LAST_NAME = "last_name"
+PROFILE_NICKNAME = "nickname"
+PROFILE_PHONE = "phone"
+PROFILE_EMAIL = "email"
+PROFILE_ACTIVITIES = "activities"
+PROFILE_LANGUAGE = "language"
+PROFILE_AVAILABILITY = "availability"
+PROFILE_CHAT_ID = "chat_id"
+
+PROFILE_QUESTIONS = {
+    PROFILE_FIRST_NAME: MSG_ONBOARD_FIRST_NAME,
+    PROFILE_LAST_NAME: MSG_ONBOARD_LAST_NAME,
+    PROFILE_EMAIL: MSG_ONBOARD_EMAIL,
+    PROFILE_AVAILABILITY: MSG_ONBOARD_AVAILABILITY,
+    PROFILE_ACTIVITIES: MSG_ONBOARD_ACTIVITIES,
 }
