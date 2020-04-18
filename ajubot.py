@@ -441,6 +441,9 @@ class Ajubot:
                 for remark in request_details["remarks"]:
                     message += "- %s\n" % remark
 
+            if "hasDisabilities" in request_details:
+                message += "\n%s\n" % (c.MSG_DISABILITY % request_details)
+
             message += "\n" + c.MSG_LET_ME_KNOW
             self.updater.bot.send_message(
                 chat_id=chat_id,

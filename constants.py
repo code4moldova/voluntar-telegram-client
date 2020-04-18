@@ -22,6 +22,7 @@ MSG_ANOTHER_ASSIGNEE = "Altcineva merge acolo. Te anunțăm când apar noi cerer
 MSG_REQUEST_CANCELED = "Cererea de ajutor a fost anulată."
 MSG_LET_ME_KNOW = "Anunță-mă când te-ai pornit"
 MSG_LET_ME_KNOW_ARRIVE = "Anunță-mă când e gata"
+MSG_DISABILITY = "♿ Atenție, %(beneficiary)s are careva dizabilități, posibil va deschide mai lent ușa sau va răspunde întârziat, să ai răbdare."
 MSG_OTHER_REMARKS = "*Remarci* de la alți voluntari:\n"
 MSG_NO_WORRIES_LATER = (
     "Bine, nu te îngrijora, vor apărea și alte cereri în viitor. Ai grijă de tine!"
