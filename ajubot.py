@@ -198,8 +198,9 @@ class Ajubot:
             # they ticked an actual symptom, send an ACK to them as feedback. Note that we can get into this part of
             # the code multiple times, depending on how they tick the checkboxes - so we have to keep track of the
             # state and update the inline keyboard accordingly
-            previous_keyboard = context.user_data.get("symptom_keyboard", k.symptom_choices)
+            previous_keyboard = context.user_data.get("symptom_keyboard", k.new_symptom_choices())
             updated_keyboard = k.update_dynamic_keyboard_symptom(previous_keyboard, response_code)
+            context.user_data["symptom_keyboard"] = updated_keyboard
 
             self.updater.bot.edit_message_reply_markup(
                 chat_id=chat_id,

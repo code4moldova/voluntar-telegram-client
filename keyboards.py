@@ -91,6 +91,20 @@ symptom_choices = [
 ]
 
 
+def new_symptom_choices():
+    """Return a new symptom-choice keyboard. Since they're user-specific, everyone needs their own keyboard"""
+    return [
+        [
+            InlineKeyboardButton("☐ Febră", callback_data="symptom_fever"),
+            InlineKeyboardButton("☐ Tuse", callback_data="symptom_cough"),
+            InlineKeyboardButton("☐ Respiră greu", callback_data="symptom_heavybreathing"),
+        ],
+        [InlineKeyboardButton("ð Nu are simptome", callback_data="symptom_none")],
+        [InlineKeyboardButton("Nu știu", callback_data="symptom_noidea")],
+        [InlineKeyboardButton("Mai departe", callback_data="symptom_next")],
+    ]
+
+
 def toggle_checkmark(text):
     """Toggle a checkmark in a beginning of a string, e.g. '☐ Febră'->'☑ Febră' and vice versa"""
     if "☑" in text:
