@@ -105,6 +105,45 @@ def new_symptom_choices():
     ]
 
 
+# shown when onboarding volunteers, they select which type of contribution they can make
+assistance_choices = [
+    [
+        InlineKeyboardButton("☐ Transport", callback_data="assist_transport"),
+        InlineKeyboardButton("☐ Livrare", callback_data="assist_delivery"),
+        InlineKeyboardButton("☐ Apeluri", callback_data="assist_phone"),
+    ],
+    [InlineKeyboardButton("Mai departe", callback_data="assist_next")],
+]
+
+
+def new_assistance_choices():
+    """Return a new assistance-choice keyboard. Since they're user-specific, everyone needs their own keyboard"""
+    return [
+        [
+            InlineKeyboardButton("☐ Transport", callback_data="assist_transport"),
+            InlineKeyboardButton("☐ Livrare", callback_data="assist_delivery"),
+            InlineKeyboardButton("☐ Apeluri", callback_data="assist_phone"),
+        ],
+        [InlineKeyboardButton("Mai departe", callback_data="assist_next")],
+    ]
+
+
+def update_dynamic_keyboard_assistance(keyboard, assistance):
+    """Generate a new keyboard to provide a smooth user experience when ticking and unticking checkboxes, it
+    is used for collecting a list of activities the volunteer can perform"""
+    # UGLY and hardcoded but it is not essential at the moment
+    if not assistance:
+        return keyboard
+
+    if assistance == "assist_transport":
+        keyboard[0][0].text = toggle_checkmark(keyboard[0][0].text)
+    elif assistance == "assist_delivery":
+        keyboard[0][1].text = toggle_checkmark(keyboard[0][1].text)
+    elif assistance == "assist_phone":
+        keyboard[0][2].text = toggle_checkmark(keyboard[0][2].text)
+    return keyboard
+
+
 def toggle_checkmark(text):
     """Toggle a checkmark in a beginning of a string, e.g. '☐ Febră'->'☑ Febră' and vice versa"""
     if "☑" in text:
