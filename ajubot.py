@@ -131,7 +131,9 @@ class Ajubot:
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_symptom, pattern="^symptom.*"))
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_wouldyou, pattern="^wouldyou.*"))
         dispatcher.add_handler(CallbackQueryHandler(self.confirm_further, pattern="^further.*"))
-        dispatcher.add_handler(CallbackQueryHandler(self.confirm_assist_activities, pattern="^assist.*"))
+        dispatcher.add_handler(
+            CallbackQueryHandler(self.confirm_assist_activities, pattern="^assist.*")
+        )
 
         dispatcher.add_handler(MessageHandler(Filters.photo, self.on_photo))
         dispatcher.add_handler(MessageHandler(Filters.contact, self.on_contact))
