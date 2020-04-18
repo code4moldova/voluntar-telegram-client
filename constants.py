@@ -104,7 +104,7 @@ SYMPTOMS = {
 
 
 MSG_ONBOARD_NEXT_STEPS = (
-    "Îți mulțumim pentru informația acordată. În curs de *2 zile* vei fi contactat telefonic de"
+    "Îți mulțumim pentru răspunsuri. În curs de *2 zile* vei fi contactat telefonic de"
     " operatorii noștri.\n\nUrmătorii pași vor fi:\n"
     "- Pregătește *buletinul de identitate*\n"
     "- Vino la **str. București 35** pentru a *semna contractul*\n"
