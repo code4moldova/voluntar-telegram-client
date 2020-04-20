@@ -3,6 +3,18 @@
 - See `doc/chat_interaction.svg` to get an idea of the workflow
 - Code derived from https://github.com/roataway/telegram-bot, it provides examples of stateful interactions
 
+The aim of the bot is to disseminate details about assistance requests to volunteers who happen to be nearby. The bot
+notifies them via Telegram, then volunteers either decline the request or state the time when they will be able to
+handle it. The backend examines the received offers and assigns one volunteer to the mission. The bot then informs the
+volunteer about the address and the needs of the person who needs assistance. At the end of the interaction the bot's
+interface provides means to collect details about the beneficiary's mood and symptoms, as well as additional
+remarks for future volunteers who might deal with this person.
+
+![alt text](doc/screenshots/01-notify.png | width=160 "Assistance request notification")![alt text](doc/screenshots/02-confirm.png | width=160 "Assistance request confirmation")![alt text](doc/screenshots/03-exit.png | width=160 "Exit survey")
+
+
+
+
 ## The big picture
 
 ```
@@ -52,10 +64,11 @@ The following endpoints are used for interaction between the backend and the Tel
     [done] backend->bot: notify the specific volunteer that they are responsible for a request
     [done] backend->bot: notify the specific volunteer that a request assigned to them was cancelled}
     [done] bot->backend: notify about offers from volunteers about a specific requestID
-    - bot->backend: volunteer is on their way
-    - bot->backend: mission accomplished
-    - bot->backend: send the receipt
-    - bot->backend: exit survey
+    [done] bot->backend: volunteer is on their way
+    [done] bot->backend: mission accomplished
+    [done] bot->backend: send the receipt
+    [done] bot->backend: exit survey
+    - bot->backend: registration data about a new volunteer
     
     
 ## Payloads
@@ -91,6 +104,19 @@ Payload sample `cancel_help_request`, this is sent when a fixer notifies a volun
           "request_id": "fe91e4b6-e902-4d03-8500-d058673cb9bd",
           "volunteer": chat_id
     }
+    
+Payload sample `register_pending_volunteer`, this is sent when a volunteer registered in the system via the bot. In the
+process we've collected some details about them and are informing the backend about it. A fixer should then verify this
+volunteer's application and approve or decline it.
+
+     {
+         'first_name', 'Alexei',
+         'last_name', 'Murzicescu',
+         'availability', '8',  # how many hours per day they can dedicate to the cause
+         'activities', ['transport', 'delivery', 'phone'],  # at least one of these will be present
+         'phone', '+3730000000'
+         'chat_id' 12312323  # telegram chat id
+     }
 
 ## Bot's state
 Some information is stored in a persistent context that survives bot restarts. This information is needed to keep track
