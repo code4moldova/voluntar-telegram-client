@@ -10,10 +10,7 @@ volunteer about the address and the needs of the person who needs assistance. At
 interface provides means to collect details about the beneficiary's mood and symptoms, as well as additional
 remarks for future volunteers who might deal with this person.
 
-![alt text](doc/screenshots/01-notify.png "Assistance request notification"){:height="50%" width="50%"}
-
-![alt text](doc/screenshots/02-confirm.png "Assistance request confirmation")<!-- .element height="50%" width="50%" -->
-![alt text](doc/screenshots/03-exit.png | width=160)
+![Screensots of chat UI](doc/screenshots/flow.png "Assistance request notification, negotiation and handling")
 
 
 
