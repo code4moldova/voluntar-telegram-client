@@ -3,19 +3,20 @@
 - See `doc/chat_interaction.svg` to get an idea of the workflow
 - Code derived from https://github.com/roataway/telegram-bot, it provides examples of stateful interactions
 
-The aim of the bot is to disseminate details about assistance requests to volunteers who happen to be nearby. The bot
-notifies them via Telegram, then volunteers either decline the request or state the time when they will be able to
-handle it. The backend examines the received offers and assigns one volunteer to the mission. The bot then informs the
-volunteer about the address and the needs of the person who needs assistance. At the end of the interaction the bot's
-interface provides means to collect details about the beneficiary's mood and symptoms, as well as additional
-remarks for future volunteers who might deal with this person.
 
-![Screensots of chat UI](doc/screenshots/flow.png "Assistance request notification, negotiation and handling")
+## How it works
 
+1. The aim of the bot is to disseminate requests for assistance among volunteers who happen to be nearby.
+2. The bot notifies them via Telegram, providing an option to decline the request or state the time when they will be
+   able to handle it.
+3. The backend examines the received offers and assigns a volunteer to the mission.
+4. The bot then informs them about the address and the needs of the person who asked for assistance.
+5. At the end of the interaction the bot collects details about the beneficiary's mood and symptoms, as well as
+   additional remarks for future volunteers who might deal with this person.
 
+![Screensots of chat UI](doc/screenshots/flow.png "Assistance request notification, negotiation, handling, exit survey")
 
-
-## The big picture
+## Architecture
 
 ```
                                                                           (start here)
