@@ -3,7 +3,7 @@
 from enum import Enum
 
 VERSION = "0.5.0"  # follow SemVer conventions: https://semver.org/
-URL = "code4md.com"
+URL = "voluntar.md"
 
 # Though we operate with UTC internally, the times will be shown to the users
 # in their local timezone.
