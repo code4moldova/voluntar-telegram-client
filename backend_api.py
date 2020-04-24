@@ -73,7 +73,7 @@ class Backender:
         :returns: bool, True if the user is known to the backend, otherwise False"""
         log.debug("Link vol:%s to chat %s and tel %s", nickname, chat_id, phone)
         response = self._get(url=f"volunteer?telegram_chat_id={chat_id}")
-        return response.json()["exists"]
+        return response.json()["exists"] if "exists" in response else False
 
     def register_pending_volunteer(self, data):
         """Tell the backend that we have a new volunteer who wants to help
