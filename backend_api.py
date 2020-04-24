@@ -72,10 +72,8 @@ class Backender:
         :param phone: str, phone number, full representation, e.g.:'+37379000000'
         :returns: bool, True if the user is known to the backend, otherwise False"""
         log.debug("Link vol:%s to chat %s and tel %s", nickname, chat_id, phone)
-        payload = {"telegram_id": nickname, "telegram_chat_id": chat_id, "phone": phone}
-        self._put(payload=payload, url="volunteer")
-        return False
-        # TODO
+        response = self._get(url=f"volunteer?telegram_chat_id={chat_id}")
+        return response.json()["exists"]
 
     def register_pending_volunteer(self, data):
         """Tell the backend that we have a new volunteer who wants to help
@@ -94,6 +92,7 @@ class Backender:
             data[c.PROFILE_FIRST_NAME],
             data[c.PROFILE_LAST_NAME],
         )
+        self._post(payload=data, url="volunteer")
 
     # TODO
     def upload_shopping_receipt(self, data, request_id):
