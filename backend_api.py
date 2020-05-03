@@ -85,7 +85,8 @@ class Backender:
         #  'activities', ['transport', 'delivery', 'phone'],
         #  'phone', '+3730000000'
         #  'chat_id' 12312323  # telegram chat id}
-        # TODO
+        # NOTE: optionally it will contain a `phoneEx` key, corresponding to a foreign phone number that their
+        #       Telegram account was registered with
         log.debug(
             "Register chat_id=%s f_name=%s l_name=%s",
             data[c.PROFILE_CHAT_ID],

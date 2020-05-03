@@ -2,12 +2,16 @@
 
 from enum import Enum
 
-VERSION = "0.5.0"  # follow SemVer conventions: https://semver.org/
+VERSION = "0.5.1"  # follow SemVer conventions: https://semver.org/
 URL = "voluntar.md"
 
 # Though we operate with UTC internally, the times will be shown to the users
 # in their local timezone.
 TIMEZONE = "Europe/Chisinau"
+
+# This is used to determine whether the volunteer's Telegram number is
+# foreign or not.
+LOCAL_PREFIX = "+373"
 
 # Messages used in various phases of interaction
 MSG_HELP = "Încearcă comanda /vreausaajut"
@@ -122,6 +126,10 @@ MSG_ACTIVITIES_EXPLAINED = (
 
 MSG_ONBOARD_FIRST_NAME = "Cum *te cheamă*?"
 MSG_ONBOARD_LAST_NAME = "Care e numele tău de *familie*?"
+# the backslaskes are needed to escape - and + because Telegram insists on that
+MSG_ONBOARD_LOCAL_PHONE = (
+    "Ai un număr de telefon din Moldova? Scrie\-l cu prefixul \\" + LOCAL_PREFIX
+)
 MSG_ONBOARD_EMAIL = "Care e adresa ta de *email*?"
 MSG_ONBOARD_AVAILABILITY = (
     "Aproximativ *câte ore* pe zi ești disponibil? \(introdu un număr, ex: 2\)"
@@ -134,16 +142,21 @@ MSG_ONBOARD_ACTIVITIES_NUDGE = "Alege cel puțin o opțiune"
 PROFILE_FIRST_NAME = "first_name"
 PROFILE_LAST_NAME = "last_name"
 PROFILE_NICKNAME = "nickname"
-PROFILE_PHONE = "phone"
 PROFILE_EMAIL = "email"
 PROFILE_ACTIVITIES = "activities"
 PROFILE_LANGUAGE = "language"
 PROFILE_AVAILABILITY = "availability"
 PROFILE_CHAT_ID = "chat_id"
+# We use several phone numbers, PROFILE_PHONE_FOREIGN is set if the Telegram number is not a local one, i.e. it doesn't
+# begin with LOCAL_PREFIX
+PROFILE_PHONE = "phone"
+PROFILE_PHONE_FOREIGN = "phoneEx"
+
 
 PROFILE_QUESTIONS = {
     PROFILE_FIRST_NAME: MSG_ONBOARD_FIRST_NAME,
     PROFILE_LAST_NAME: MSG_ONBOARD_LAST_NAME,
+    PROFILE_PHONE: MSG_ONBOARD_LOCAL_PHONE,
     PROFILE_EMAIL: MSG_ONBOARD_EMAIL,
     PROFILE_AVAILABILITY: MSG_ONBOARD_AVAILABILITY,
     PROFILE_ACTIVITIES: MSG_ONBOARD_ACTIVITIES,

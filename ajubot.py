@@ -556,6 +556,15 @@ class Ajubot:
                     c.PROFILE_EMAIL: None,
                 }
             )
+
+            if not phone.startswith(c.LOCAL_PREFIX):
+                # If the Telegram phone number is not a local number (i.e. it was registered abroad), we're moving it
+                # to a different attribute, and clearing the original one, such that later in this function we shall
+                # ask for a local phone number
+                log.debug("Phone number is foreign, will ask for a local one")
+                profile[c.PROFILE_PHONE_FOREIGN] = phone
+                profile[c.PROFILE_PHONE] = None
+
             context.bot_data["registrations"][chat_id] = profile
         else:
             profile = context.bot_data["registrations"][chat_id]
