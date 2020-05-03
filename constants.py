@@ -127,7 +127,9 @@ MSG_ACTIVITIES_EXPLAINED = (
 MSG_ONBOARD_FIRST_NAME = "Cum *te cheamă*?"
 MSG_ONBOARD_LAST_NAME = "Care e numele tău de *familie*?"
 # the backslaskes are needed to escape - and + because Telegram insists on that
-MSG_ONBOARD_LOCAL_PHONE = "Ai un număr de telefon din Moldova? Scrie\-l cu prefixul \\" + LOCAL_PREFIX
+MSG_ONBOARD_LOCAL_PHONE = (
+    "Ai un număr de telefon din Moldova? Scrie\-l cu prefixul \\" + LOCAL_PREFIX
+)
 MSG_ONBOARD_EMAIL = "Care e adresa ta de *email*?"
 MSG_ONBOARD_AVAILABILITY = (
     "Aproximativ *câte ore* pe zi ești disponibil? \(introdu un număr, ex: 2\)"
