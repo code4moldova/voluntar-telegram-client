@@ -1,4 +1,4 @@
 python-telegram-bot==12.5.1
-werkzeug==1.0.1
+werkzeug==2.2.3
 requests==2.23.0
 pytz==2019.3
